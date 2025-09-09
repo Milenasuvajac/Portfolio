@@ -16,7 +16,7 @@ export default function ThreeScene() {
 
     useEffect(() => {
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x222222);
+        scene.background = new THREE.Color('#091f02');
 
         const camera = new THREE.PerspectiveCamera(
             75,
@@ -33,6 +33,8 @@ export default function ThreeScene() {
         );
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         mountRef.current!.appendChild(renderer.domElement);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // or another shadow map type
 
         // Controls
         const controls = new OrbitControls(camera, renderer.domElement);
@@ -43,12 +45,16 @@ export default function ThreeScene() {
         controls.target.set( -0.00763346160769606, 0.9865404956019542, 0.2127792947689923);
 
         // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
-        scene.add(ambientLight);
+        //const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+        //scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-        dirLight.position.set(5, 10, 5);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        dirLight.position.set(5, 5, 2);
+        dirLight.castShadow = true;
         scene.add(dirLight);
+        // Add helper to visualize the directional light
+        //const helper = new THREE.DirectionalLightHelper(dirLight, 5); // 5 is the size of the helper
+        //scene.add(helper);
 
         const textureLoader = new THREE.TextureLoader();
 
@@ -62,6 +68,9 @@ export default function ThreeScene() {
                 model.scale.set(1, 1, 1);
 
                 gltf.scene.traverse((child: any) => {
+                    if(!child.name.includes("Sun")) {
+                        child.castShadow = true;
+                    }
                     if (child.material && child.material.name.includes("Glass")) {
                         child.material = glassMaterial;
                     }
@@ -76,9 +85,13 @@ export default function ThreeScene() {
                         catTexture.wrapS = THREE.RepeatWrapping;
                         catTexture.wrapT = THREE.RepeatWrapping;
                         catTexture.flipY = false;
+                        child.castShadow = true;
                     }
                     if (child.material && child.material.name.includes("Wood")) {
                         child.material = createWoodMaterial();
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+
                     }
                     if (child.name.includes("cookie")){
                         child.material = createChocolateCookieMaterial();

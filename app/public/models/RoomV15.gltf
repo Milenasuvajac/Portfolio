@@ -33,7 +33,7 @@
 						0.8999999761581421,
 						0.8999999761581421
 					],
-					"intensity":1,
+					"intensity":0.1,
 					"type":"directional",
 					"name":"Sun"
 				}
