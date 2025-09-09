@@ -39,10 +39,10 @@ export default function ThreeScene() {
         controls.target.set( -0.00763346160769606, 0.9865404956019542, 0.2127792947689923);
 
         // Lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
         scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
         dirLight.position.set(5, 10, 5);
         scene.add(dirLight);
 
@@ -52,7 +52,7 @@ export default function ThreeScene() {
         // Load GLB model
         const loader = new GLTFLoader();
         loader.load(
-            "/models/RoomV14.gltf",
+            "/models/RoomV15.gltf",
             (gltf) => {
                 const model = gltf.scene;
                 model.scale.set(1, 1, 1);
@@ -89,7 +89,7 @@ export default function ThreeScene() {
 
 
         const glassMaterial = new THREE.MeshPhysicalMaterial({
-            transmission: 1,
+            transmission: 0.6,
             opacity: 1,
             color: 0xfbfbfb,
             metalness: 0,
@@ -143,7 +143,7 @@ export default function ThreeScene() {
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
-            //console.log("Camera position: ", camera.position)
+            //console.log("Camera position: ", camera.position);
             //console.log("Target position: ", controls.target);
         };
         animate();

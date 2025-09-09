@@ -13,8 +13,8 @@ export function createWoodMaterial() {
 
     // Base wood color gradient
     const gradient = ctx.createLinearGradient(0, 0, 0, size);
-    gradient.addColorStop(0, "#403424");
-    gradient.addColorStop(1, "#492E19");
+    gradient.addColorStop(0, "#2A0905");
+    gradient.addColorStop(1, "#240703");
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, size, size);
 
@@ -25,9 +25,9 @@ export function createWoodMaterial() {
         const radius = 25 + i * 20 + Math.random() * 15;
 
         const ringGradient = ctx.createRadialGradient(centerX, centerY, radius-5, centerX, centerY, radius+5);
-        ringGradient.addColorStop(0, "#4f3d24");
-        ringGradient.addColorStop(0.5, "#3b2f1e");
-        ringGradient.addColorStop(1, "#36322e");
+        ringGradient.addColorStop(0, "#120101");
+        ringGradient.addColorStop(0.5, "#240703");
+        ringGradient.addColorStop(1, "#0D0104");
 
         ctx.strokeStyle = ringGradient;
         ctx.lineWidth = 8;
