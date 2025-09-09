@@ -5,6 +5,10 @@ import * as THREE from "three";
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import {createWoodMaterial} from "@/utils/createWoodMaterial";
+import {createChocolateCookieMaterial} from "@/utils/createChocolateCookieMaterial";
+import {createSeaweedMaterial} from "@/utils/createSeaweedMaterial";
+import {createRockWithMoss} from "@/utils/createRockWithMoss";
+import {createSimpleMeshTexture} from "@/utils/createSimpleMeshTexture";
 //import {FBXLoader} from 'three/examples/jsm/loaders/FBXLoader.js';
 
 export default function ThreeScene() {
@@ -71,11 +75,23 @@ export default function ThreeScene() {
                         child.material.needsUpdate = true;
                         catTexture.wrapS = THREE.RepeatWrapping;
                         catTexture.wrapT = THREE.RepeatWrapping;
-                        // flip vertically
                         catTexture.flipY = false;
                     }
                     if (child.material && child.material.name.includes("Wood")) {
                         child.material = createWoodMaterial();
+                    }
+                    if (child.name.includes("cookie")){
+                        child.material = createChocolateCookieMaterial();
+                    }
+                    if (child.name.includes("Seaweed")){
+                        child.material = createSeaweedMaterial();
+                    }
+                    if (child.name.includes("Mossy")){
+                        child.material = createRockWithMoss();
+                    }
+                    if (child.material && child.material.name.includes("Speaker Inside"))
+                    {
+                        child.material = createSimpleMeshTexture();
                     }
             });
 

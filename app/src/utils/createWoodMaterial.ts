@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 export function createWoodMaterial() {
-    const size = 512;
+    const size = 712;
     const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
@@ -26,12 +26,12 @@ export function createWoodMaterial() {
 
         const ringGradient = ctx.createRadialGradient(centerX, centerY, radius-5, centerX, centerY, radius+5);
         ringGradient.addColorStop(0, "#120101");
-        ringGradient.addColorStop(0.5, "#240703");
+        ringGradient.addColorStop(0.7, "#240703");
         ringGradient.addColorStop(1, "#0D0104");
 
         ctx.strokeStyle = ringGradient;
         ctx.lineWidth = 8;
-        ctx.globalAlpha = 0.6;
+        ctx.globalAlpha = 0.5;
         ctx.beginPath();
         ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
         ctx.stroke();
