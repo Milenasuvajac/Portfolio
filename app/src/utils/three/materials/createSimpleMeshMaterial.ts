@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 
-export function createSimpleMeshTexture() {
+export function createSimpleMeshMaterial() {
     const size = 52;
     const canvas = document.createElement("canvas");
     canvas.width = size;

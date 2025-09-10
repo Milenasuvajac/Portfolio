@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-export function createRockWithMoss() {
+export function createRockWithMossMaterial() {
     const size = 512;
     const canvas = document.createElement("canvas");
     canvas.width = size;
