@@ -43,6 +43,12 @@ export default function ThreeScene() {
         controls.enablePan = true;      // allow moving scene
         controls.enableZoom = true;     // allow zoom with scroll
         controls.target.set( -0.00763346160769606, 0.9865404956019542, 0.2127792947689923);
+        controls.minPolarAngle = 0;
+        controls.maxPolarAngle = Math.PI / 2 - 0.1;
+        controls.minAzimuthAngle = 0
+        controls.maxAzimuthAngle = Math.PI / 2 + 0.2;
+        controls.minDistance = 0.5;
+        controls.maxDistance = 20;
 
         // Lights
         //const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
@@ -62,7 +68,7 @@ export default function ThreeScene() {
         // Load GLB model
         const loader = new GLTFLoader();
         loader.load(
-            "/models/RoomV15.gltf",
+            "/models/RoomV17.gltf",
             (gltf) => {
                 const model = gltf.scene;
                 model.scale.set(1, 1, 1);
