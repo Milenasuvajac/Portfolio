@@ -16,7 +16,7 @@ export default function ThreeScene() {
     useEffect(() => {
 
         const { scene, camera, renderer } = useThreeScene(mountRef);
-        const sea = createSea2(scene);
+        const sea = createSea2();
         scene.add(sea);
         createNightSky().then((sky) => {
             scene.add(sky);
