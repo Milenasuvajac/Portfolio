@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@prisma/client": "^6.16.1",
+    "bcryptjs": "^3.0.2",
     "gsap": "^3.13.0",
     "next": "15.5.2",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "three": "^0.179.1"
+    "three": "^0.179.1",
+    "zod": "^4.1.8"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
