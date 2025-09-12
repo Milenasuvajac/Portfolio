@@ -7,6 +7,7 @@ import {createChocolateCookieMaterial} from "@/utils/three/materials/createChoco
 import {createWoodMaterial} from "@/utils/three/materials/createWoodMaterial";
 import {hangingPlantMaterial} from "@/utils/three/materials/hangingPlantMaterial";
 import {glassMaterial} from "@/utils/three/materials/glassMaterial";
+import {createWaterMaterial} from "@/utils/three/materials/waterMaterial";
 
 
 // Handle the GLTF loading and material assignments
@@ -17,7 +18,7 @@ export const useRoomModel = (scene: THREE.Scene) => {
     // Load GLB model
     const loader = new GLTFLoader();
     loader.load(
-        "/models/RoomV17.gltf",
+        "/models/RoomV18.gltf",
         (gltf) => {
             const model = gltf.scene;
             model.scale.set(1, 1, 1);
@@ -60,6 +61,9 @@ export const useRoomModel = (scene: THREE.Scene) => {
                 if (child.material && child.material.name.includes("Speaker Inside"))
                 {
                     child.material = createSimpleMeshMaterial();
+                }
+                if (child.name == "Water") {
+                    child.material = createWaterMaterial();
                 }
             });
 

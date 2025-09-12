@@ -5,6 +5,10 @@ import * as THREE from "three";
 import {useRoomModel} from "@/hooks/three/useRoomModel";
 import {useOrbitControls} from "@/hooks/three/useOrbitControls";
 import {useThreeScene} from "@/hooks/three/useThreeScene";
+import {createNightSky} from "@/utils/three/materials/createNightSky"
+import {createSea} from "@/utils/three/materials/createSea";
+import {createSea2} from "@/utils/three/materials/createSea2";
+
 
 export default function ThreeScene() {
     const mountRef = useRef<HTMLDivElement>(null);
@@ -12,28 +16,26 @@ export default function ThreeScene() {
     useEffect(() => {
 
         const { scene, camera, renderer } = useThreeScene(mountRef);
+        const sea = createSea2(scene);
+        scene.add(sea);
+        createNightSky().then((sky) => {
+            scene.add(sky);
+        });
+        useRoomModel(scene);
+        const controls = useOrbitControls(camera, renderer)
 
-        // Controls
-        const controls = useOrbitControls(camera, renderer);
-
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 2.5);
         dirLight.position.set(5, 5, 2);
         dirLight.castShadow = true;
         scene.add(dirLight);
 
-        useRoomModel(scene);
-
-        // Animation loop
         const animate = () => {
             requestAnimationFrame(animate);
             controls.update();
             renderer.render(scene, camera);
-            //console.log("Camera position: ", camera.position);
-            //console.log("Target position: ", controls.target);
         };
         animate();
 
-        // Resize handling
         const handleResize = () => {
             if (mountRef.current) {
                 const width = mountRef.current.clientWidth;

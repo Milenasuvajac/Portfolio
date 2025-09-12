@@ -1,18 +1,15 @@
-import {useOrbitControls} from "@/hooks/three/useOrbitControls";
 import * as THREE from "three";
-import {useRoomModel} from "@/hooks/three/useRoomModel";
+import {RefObject} from "react";
 
 // Handles scene, camera, renderer setup and lifecycle
-export const useThreeScene = (mountRef: RefObject<HTMLDivElement>) => {
+export const useThreeScene = (mountRef: RefObject<HTMLDivElement | null>) => {
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#091f02');
-
     const camera = new THREE.PerspectiveCamera(
         75,
         mountRef.current!.clientWidth / mountRef.current!.clientHeight,
         0.1,
-        1000
+        50000
     );
     camera.position.set( 4.150419508853013,  1.7776508792813757, 10);
 
