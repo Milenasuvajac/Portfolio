@@ -29,9 +29,11 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
 
     const userToCreate = { username, companyName, password}
     const validation = UserSchema.safeParse(userToCreate)
+    console.log("Validation:", validation)
     if (!validation.success) {
         return NextResponse.json({ error: 'Invalid user data' }, { status: 400 })
     }
+    console.log("Validation:", validation)
     if (await userExistsByUsername(username)) {
         return NextResponse.json({ error: 'User already exists' }, { status: 409 })
     }
@@ -39,8 +41,7 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
     try {
         const saltRounds = 10
         const hashedPassword = await bcrypt.hash(password, saltRounds)
-
-        const user = await createUser(username, companyName, hashedPassword)
+        const user = await createUser(username, companyName ? companyName : '', hashedPassword)
 
         return NextResponse.json(user, { status: 201 })
     } catch (error) {
