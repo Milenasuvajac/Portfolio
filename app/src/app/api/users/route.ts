@@ -29,7 +29,6 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
 
     const userToCreate = { username, companyName, password}
     const validation = UserSchema.safeParse(userToCreate)
-    console.log("Validation:", validation)
     if (!validation.success) {
         return NextResponse.json({ error: 'Invalid user data' }, { status: 400 })
     }

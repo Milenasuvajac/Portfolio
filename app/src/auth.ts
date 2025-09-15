@@ -3,7 +3,7 @@ import authConfig from './auth.config'
 import logger from "@/utils/logger";
 
 
-export const { auth, handlers, signIn, signOut } = NextAuth({
+export const { signIn, signOut } = NextAuth({
   ...authConfig,
   callbacks: {
 
@@ -39,8 +39,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   // Spread the authentication configuration
   session: {
 
-    maxAge: 30 * 24 * 60 * 60,
+    maxAge: 24 * 60 * 60,
     // Store sessions as JWTs instead of the default database strategy
-    strategy: 'jwt', // 30 days expiration
+    strategy: 'jwt', // 1 day expiration
   },
 })

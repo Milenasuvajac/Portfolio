@@ -26,7 +26,7 @@ export default auth(async req => {
   const isUserAdmin = token?.role === 'ADMIN'
 
   const isAuthPage = authRoutes.includes(nextUrl.pathname)
-  const isAdminPage = nextUrl.pathname.startsWith('/admin')
+  const isAdminPage = nextUrl.pathname.startsWith('/admin/user')
 
   if (isAuthPage) {
     if (isLoggedIn) {
@@ -41,9 +41,9 @@ export default auth(async req => {
     return NextResponse.redirect(new URL('/auth/login', nextUrl))
   }
 
-  if (isAdminPage && !isUserAdmin) {
-    return NextResponse.redirect(new URL(DEFAULT_USER_REDIRECT_URL, nextUrl))
-  }
+  //if (isAdminPage && !isUserAdmin) {
+    //return NextResponse.redirect(new URL(DEFAULT_USER_REDIRECT_URL, nextUrl))
+  //}
 
   return undefined
 })

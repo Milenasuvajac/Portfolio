@@ -67,7 +67,7 @@ export const PUT = async (
     }
 
     try {
-        const updatedUser = await updateUser(username, password, companyName, id)
+        const updatedUser = await updateUser(username, password,  companyName ? companyName : '', id)
 
         if (!updatedUser) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 })
@@ -85,6 +85,7 @@ export const DELETE = async (_request: NextRequest, {
 }: {
     params: Params;
 }): Promise<NextResponse> => {
+    console.log('DELETE method called for user ID:', params.id)
     const { id } = params
 
     if (!/^-?\d+$/.test(id)) {

@@ -1,9 +1,9 @@
 export interface DocumentDTO {
-    DID: number
+    did: number
     name: string
-    year: string
+    year: number
     document: string
-    comment: string
+    comment: string | null
     issuer: string
     language: string
 }
