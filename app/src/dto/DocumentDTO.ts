@@ -1,5 +1,5 @@
 export interface DocumentDTO {
-    did: number
+    DID: number
     name: string
     year: number
     document: string

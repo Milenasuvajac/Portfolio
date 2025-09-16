@@ -47,7 +47,6 @@ model Message {
   company  String
   message  String
   contact  String
-  content  String
 }
 
 model Info {

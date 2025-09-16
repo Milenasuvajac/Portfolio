@@ -24,7 +24,6 @@ export default function AdminMessagePage() {
     company: '',
     message: '',
     contact: '',
-    content: ''
   })
 
   // Fetch messages
@@ -85,7 +84,6 @@ export default function AdminMessagePage() {
       company: message.company,
       message: message.message,
       contact: message.contact,
-      content: message.content || ''
     })
     setShowForm(true)
   }
@@ -99,7 +97,6 @@ export default function AdminMessagePage() {
       company: '',
       message: '',
       contact: '',
-      content: ''
     })
   }
 
@@ -189,17 +186,6 @@ export default function AdminMessagePage() {
               />
             </div>
 
-            <div className="form-group">
-              <label htmlFor="content">Content</label>
-              <textarea
-                id="content"
-                value={formData.content}
-                onChange={(e) => setFormData({...formData, content: e.target.value})}
-                rows={6}
-                placeholder="Additional content or details..."
-              />
-            </div>
-
             <div className="form-actions">
               <button type="submit" className="btn btn-primary">
                 {editingMessage ? 'Update Message' : 'Create Message'}
@@ -235,12 +221,6 @@ export default function AdminMessagePage() {
                   <p><strong>Contact:</strong> {message.contact}</p>
                   <p><strong>Message:</strong></p>
                   <div className="message-text">{message.message}</div>
-                  {message.content && (
-                    <>
-                      <p><strong>Additional Content:</strong></p>
-                      <div className="content-text">{message.content}</div>
-                    </>
-                  )}
                 </div>
 
                 <div className="message-actions">

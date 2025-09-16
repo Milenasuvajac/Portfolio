@@ -199,50 +199,58 @@ export default function AdminTechnologyPage() {
             </button>
           </div>
         ) : (
-          <div className="technologies-grid">
-            {technologies.map((technology) => (
-              <div key={technology.TID} className="technology-card">
-                <div className="technology-header">
-                  <div className="technology-title">
-                    {technology.icon && (
-                      <span className="technology-icon">
-                        {technology.icon.startsWith('http') ? (
-                          <img src={technology.icon} alt={technology.name} className="icon-image" />
+          <div className="table-container">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Icon</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {technologies.map((technology) => (
+                  <tr key={technology.TID}>
+                    <td className="id-cell">#{technology.TID}</td>
+                    <td className="icon-cell">
+                      {technology.icon ? (
+                        technology.icon.startsWith('http') ? (
+                          <img src={technology.icon} alt={technology.name} className="table-icon-image" />
                         ) : (
-                          <span className="icon-emoji">{technology.icon}</span>
-                        )}
-                      </span>
-                    )}
-                    <h3>{technology.name}</h3>
-                  </div>
-                  <div className="technology-actions">
-                    <button 
-                      onClick={() => handleEdit(technology)}
-                      className="btn btn-edit"
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(technology.TID)}
-                      className="btn btn-delete"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="technology-content">
-                  <div className="technology-id">
-                    <span className="id-label">ID:</span>
-                    <span className="id-value">#{technology.TID}</span>
-                  </div>
-                  
-                  <div className="technology-description">
-                    <p>{technology.description}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+                          <span className="table-icon-emoji">{technology.icon}</span>
+                        )
+                      ) : (
+                        <span className="no-icon">-</span>
+                      )}
+                    </td>
+                    <td className="name-cell">
+                      <strong>{technology.name}</strong>
+                    </td>
+                    <td className="description-cell">
+                      {technology.description}
+                    </td>
+                    <td className="actions-cell">
+                      <div className="table-actions">
+                        <button 
+                          onClick={() => handleEdit(technology)}
+                          className="btn btn-edit btn-small"
+                        >
+                          Edit
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(technology.TID)}
+                          className="btn btn-delete btn-small"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

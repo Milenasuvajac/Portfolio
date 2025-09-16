@@ -8,11 +8,10 @@ export const createMessage = async (
   company: string,
   message: string,
   contact: string,
-  content: string
 ) => {
   try {
       return await prisma.message.create({
-        data: {name, company, message, contact, content},
+        data: {name, company, message, contact},
     })
   } catch (e) {
     logger.error('Error in createMessage:', e)
@@ -27,7 +26,6 @@ export const getAllMessages = async () => {
       name: true,
       company: true,
       message: true,
-      contact: true,
     },
   })
 }

@@ -182,6 +182,16 @@ export default function AdminInfoPage() {
               </Button>
             </div>
             <div className="admin-link-card">
+              <h3>Document Management</h3>
+              <p>Manage certificates, diplomas, and other important documents.</p>
+              <Button 
+                onClick={() => window.location.href = '/admin/documents'}
+                className="btn-primary"
+              >
+                Go to Documents
+              </Button>
+            </div>
+            <div className="admin-link-card">
               <h3>Message Management</h3>
               <p>View and manage contact messages, inquiries, and communications.</p>
               <Button 

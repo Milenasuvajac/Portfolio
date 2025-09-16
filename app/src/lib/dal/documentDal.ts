@@ -32,7 +32,7 @@ export const createDocument = async (
 export const getAllDocuments = async () : Promise<Array<DocumentDTO>> => {
   return prisma.document.findMany({
     select: {
-      did: true,
+      DID: true,
       name: true,
       year: true,
       document: true,
@@ -45,7 +45,7 @@ export const getAllDocuments = async () : Promise<Array<DocumentDTO>> => {
 
 export const getDocumentById = async (id: string) => {
   return prisma.document.findUnique({
-    where: { did: Number(id) },
+    where: { DID: Number(id) },
   })
 }
 
@@ -58,13 +58,13 @@ export const updateDocument = async (id: string, data: Partial<{
   comment?: string | null
 }>) => {
   return prisma.document.update({
-    where: { did: Number(id) },
+    where: { DID: Number(id) },
     data,
   })
 }
 
 export const deleteDocument = async (id: string) => {
   return prisma.document.delete({
-    where: { did: Number(id) },
+    where: { DID: Number(id) },
   })
 }

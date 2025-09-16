@@ -3,5 +3,5 @@ export interface MessageDTO {
     name: string
     company: string
     message: string
-    content: string
+    contact: string
 }
