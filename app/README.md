@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Odlično 👌 za **marketinški README** cilj je da odmah “proda” tvoje veštine i pokaže **šta projekat može**, a manje da objašnjava setup i Docker komande. Evo jedne verzije:
 
-## Getting Started
+---
 
-First, run the development server:
+# 🌐 Interactive 3D Portfolio Platform
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+An innovative portfolio platform that blends **immersive 3D experiences** with a **professional content management system**.
+This project demonstrates expertise in **modern full-stack development, 3D web graphics, security, and user experience design**.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## ✨ Highlights
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+* 🎨 **Immersive 3D Environment** – animated sea, dynamic night sky, and smooth camera interactions
+* 🔐 **Secure Login** – private access to sensitive documents and personal data
+* 🗂️ **Admin Dashboard** – manage projects, experience, technologies, and personal profile
+* 📑 **Protected Documents** – diplomas, certificates, and files available only to logged-in users
+* 📬 **Contact System** – simple and secure way to get in touch directly through the platform
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🎯 Why This Project Matters
 
-## Learn More
+This platform is more than a portfolio – it’s a **demonstration of advanced development skills**:
 
-To learn more about Next.js, take a look at the following resources:
+* Full-stack web application design with focus on scalability and security
+* 3D graphics and animations for engaging, interactive experiences
+* Clean architecture with intuitive user interface and role-based access
+* Real-world deployment with containerization and modern DevOps practices
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🙌 Credits & Inspirations
 
-## Deploy on Vercel
+This project was inspired and supported by various open-source resources and creative assets:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+#### Icons
+- https://www.svgrepo.com/
+- https://techicons.dev/
+- https://github.com/mqtt/mqttorg-graphics
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+#### 3D Models
+- Cat: https://www.cgtrader.com/items/5115754/download-page
+- Trees: https://www.cgtrader.com/free-3d-models/plant/other/simple-3d-vegetation
+- Monstera plant: https://www.cgtrader.com/free-3d-models/plant/pot-plant/monstera-ee8248f6-679a-4df6-83d9-f9ea2d6da18d
+- Room: https://github.com/andrewwoan/sooahs-room-folio
+
+#### Images & Textures 
+- BSC-Json: https://github.com/aduboisforge/Bright-Star-Catalog-JSON/blob/master/BSC.json
+
+All external assets remain the property of their respective creators.
