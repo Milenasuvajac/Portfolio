@@ -5,7 +5,7 @@ import Link from 'next/link'
 import '../../../users.css'
 
 interface Document {
-  did: number
+  DID: number
   name: string
   year: number
   document: string
@@ -49,7 +49,7 @@ export default function AdminDocumentsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      const url = editingDocument ? `/api/document/${editingDocument.did}` : '/api/document'
+      const url = editingDocument ? `/api/document/${editingDocument.DID}` : '/api/document'
       const method = editingDocument ? 'PUT' : 'POST'
       
       const response = await fetch(url, {
@@ -273,7 +273,7 @@ export default function AdminDocumentsPage() {
         ) : (
           <div className="documents-grid">
             {documents.map((document) => (
-              <div key={document.did} className="document-card">
+              <div key={document.DID} className="document-card">
                 <div className="document-header">
                   <h3 className="document-name">{document.name}</h3>
                   <span className="document-year">{document.year}</span>
@@ -312,11 +312,11 @@ export default function AdminDocumentsPage() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(document.did)}
+                    onClick={() => handleDelete(document.DID)}
                     className="btn btn-danger btn-small"
-                    disabled={isDeleting === document.did}
+                    disabled={isDeleting === document.DID}
                   >
-                    {isDeleting === document.did ? 'Deleting...' : 'Delete'}
+                    {isDeleting === document.DID ? 'Deleting...' : 'Delete'}
                   </button>
                 </div>
               </div>

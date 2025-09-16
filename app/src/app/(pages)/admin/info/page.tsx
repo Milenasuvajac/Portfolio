@@ -59,8 +59,11 @@ export default function PersonalInfoPage() {
 
   const handleSave = async () => {
     try {
-      const response = await fetch('/api/info', {
-        method: 'POST',
+      const method = editForm.id ? 'PUT' : 'POST'
+      const url = editForm.id ? `/api/info/${editForm.id}` : '/api/info'
+      
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -73,6 +76,13 @@ export default function PersonalInfoPage() {
 
       await fetchPersonalInfo()
       setIsEditing(false)
+      setEditForm({
+        text: '',
+        visibility: true,
+        contact: '',
+        cv: '',
+        photo: ''
+      })
     } catch (error) {
       console.error('Error saving personal info:', error)
       setError('Failed to save personal information')
@@ -84,6 +94,43 @@ export default function PersonalInfoPage() {
       ...prev,
       [field]: value
     }))
+  }
+
+  const handleEdit = (info: PersonalInfo) => {
+    setEditForm(info)
+    setIsEditing(true)
+  }
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('Da li ste sigurni da želite da obrišete ovaj profil?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/info/${id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete personal information')
+      }
+
+      await fetchPersonalInfo()
+    } catch (error) {
+      console.error('Error deleting personal info:', error)
+      setError('Failed to delete personal information')
+    }
+  }
+
+  const handleAddNew = () => {
+    setEditForm({
+      text: '',
+      visibility: true,
+      contact: '',
+      cv: '',
+      photo: ''
+    })
+    setIsEditing(true)
   }
 
   if (loading) {
@@ -102,16 +149,19 @@ export default function PersonalInfoPage() {
       <div className="page-header">
         <h1 className="page-title">Personal Information</h1>
         <div style={{ display: 'flex', gap: '1rem' }}>
-          <Button 
-            onClick={() => setIsEditing(!isEditing)} 
-            className={isEditing ? "btn-secondary" : "btn-primary"}
-          >
-            {isEditing ? 'Cancel' : 'Edit Info'}
-          </Button>
-          {isEditing && (
-            <Button onClick={handleSave} className="btn-primary">
-              Save Changes
+          {!isEditing ? (
+            <Button onClick={handleAddNew} className="btn-primary">
+              Add New Profile
             </Button>
+          ) : (
+            <>
+              <Button onClick={() => setIsEditing(false)} className="btn-secondary">
+                Cancel
+              </Button>
+              <Button onClick={handleSave} className="btn-primary">
+                {editForm.id ? 'Update Profile' : 'Create Profile'}
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -129,7 +179,9 @@ export default function PersonalInfoPage() {
         {isEditing ? (
           /* Edit Form */
           <div className="info-section">
-            <h2 className="section-title">Edit Personal Information</h2>
+            <h2 className="section-title">
+              {editForm.id ? 'Edit Profile' : 'Create New Profile'}
+            </h2>
             <div style={{ display: 'grid', gap: '1.5rem' }}>
               <div>
                 <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '600' }}>
@@ -228,7 +280,27 @@ export default function PersonalInfoPage() {
             {personalInfo.length > 0 ? (
               personalInfo.map((info, index) => (
                 <div key={info.id || index} className="info-section">
-                  <h2 className="section-title">About Me</h2>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                    <h2 className="section-title" style={{ margin: 0 }}>
+                      {info.visibility ? 'Public Profile' : 'Private Profile'}
+                    </h2>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <Button 
+                        onClick={() => handleEdit(info)} 
+                        className="btn-secondary"
+                        style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+                      >
+                        Edit
+                      </Button>
+                      <Button 
+                        onClick={() => handleDelete(info.id!)} 
+                        className="button--danger"
+                        style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
                   
                   {info.photo && (
                     <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
@@ -261,12 +333,18 @@ export default function PersonalInfoPage() {
                   {info.cv && (
                     <div className="info-card">
                       <h3>CV/Resume</h3>
-                      <Button 
-                        onClick={() => window.open(info.cv, '_blank')}
-                        className="btn-primary"
-                      >
-                        View CV/Resume
-                      </Button>
+                      {info.visibility ? (
+                        <p style={{ lineHeight: '1.6', color: '#4a5568' }}>
+                          {info.cv}
+                        </p>
+                      ) : (
+                        <Button 
+                          onClick={() => window.open(info.cv, '_blank')}
+                          className="btn-primary"
+                        >
+                          View CV/Resume
+                        </Button>
+                      )}
                     </div>
                   )}
 
@@ -308,9 +386,9 @@ export default function PersonalInfoPage() {
             ) : (
               <div className="empty-state">
                 <h3>No Personal Information</h3>
-                <p>Click "Edit Info" to add your personal information.</p>
-                <Button onClick={() => setIsEditing(true)} className="btn-primary">
-                  Add Information
+                <p>Click "Add New Profile" to create your first profile.</p>
+                <Button onClick={handleAddNew} className="btn-primary">
+                  Add New Profile
                 </Button>
               </div>
             )}
