@@ -22,8 +22,8 @@ export default {
         if (!isMatch) return null
 
         let role = "user"
-        if(username == 'milena'){
-            role = "admin"
+        if(user.username == 'milena'){
+            role = "ADMIN"
         }
 
         // Return the user data to be stored in the session and JWT
