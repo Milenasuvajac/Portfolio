@@ -4,8 +4,8 @@ import { getToken } from 'next-auth/jwt'
 
 import authConfig from './auth.config'
 import {
-  authRoutes,
-  DEFAULT_USER_REDIRECT_URL,
+    authRoutes,
+    DEFAULT_USER_REDIRECT_URL, publicRoutes,
 } from './routes'
 
 // Get the authentication secret from environment variables
@@ -26,14 +26,18 @@ export default auth(async req => {
 
     const isAuthPage = authRoutes.includes(nextUrl.pathname)
     const isAdminPage = nextUrl.pathname.includes('/admin')
-    const homePage = nextUrl.pathname === '/'
+    const isPublicPage = publicRoutes.includes(nextUrl.pathname)
 
     if(isAuthPage && isLoggedIn) {
         return NextResponse.redirect(new URL(DEFAULT_USER_REDIRECT_URL, nextUrl))
     }
 
-    if (!isLoggedIn && !isAuthPage && !homePage) {
+    if (!isLoggedIn && !isAuthPage && !isPublicPage) {
         return NextResponse.redirect(new URL('/auth/login', nextUrl))
+    }
+    if(isLoggedIn && nextUrl.pathname.includes('aboutme/public')) {
+        return NextResponse.redirect(new URL('/aboutme/private', nextUrl))
+
     }
 
     if (isAdminPage && !isUserAdmin) {

@@ -8,10 +8,11 @@ import {createWoodMaterial} from "@/utils/three/materials/createWoodMaterial";
 import {hangingPlantMaterial} from "@/utils/three/materials/hangingPlantMaterial";
 import {glassMaterial} from "@/utils/three/materials/glassMaterial";
 import {createWaterMaterial} from "@/utils/three/materials/waterMaterial";
+import {createMonitorMaterial} from "@/utils/three/materials/createMonitorMaterial";
 
 
 // Handle the GLTF loading and material assignments
-export const useRoomModel = (scene: THREE.Scene) => {
+export const useRoomModel = (scene: THREE.Scene, onLoaded?: (gltf: any) => void) => {
     const textureLoader = new THREE.TextureLoader();
 
     const catTexture = textureLoader.load('/textures/Color_7c0ec996-cf6b-498a-a581-82a24d8f65b2.png');
@@ -65,9 +66,19 @@ export const useRoomModel = (scene: THREE.Scene) => {
                 if (child.name == "Water") {
                     child.material = createWaterMaterial();
                 }
+                if (child.material && child.material.name.includes("Material.011")) {
+                    // Tag monitor surface for later alignment of CSS3D iframe
+                    child.userData.isMonitorSurface = true;
+                    child.material = createMonitorMaterial();
+                    child.castShadow = false;
+                    child.receiveShadow = true;
+                }
+
             });
 
             scene.add(model);
+            // Notify the caller that the model is loaded
+            if (onLoaded) onLoaded(gltf);
         },
         undefined,
         (error) => {
