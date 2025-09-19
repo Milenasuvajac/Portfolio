@@ -8,11 +8,7 @@ import {
     DEFAULT_USER_REDIRECT_URL, publicRoutes,
 } from './routes'
 
-// Get the authentication secret from environment variables
 const secret = process.env.AUTH_SECRET
-if (!secret) {
-  throw new Error('Secret is missing')
-}
 
 // Initialize NextAuth with the configuration
 const { auth } = NextAuth(authConfig)
@@ -35,16 +31,18 @@ export default auth(async req => {
     if (!isLoggedIn && !isAuthPage && !isPublicPage) {
         return NextResponse.redirect(new URL('/auth/login', nextUrl))
     }
+
     if(isLoggedIn && nextUrl.pathname.includes('aboutme/public')) {
         return NextResponse.redirect(new URL('/aboutme/private', nextUrl))
-
     }
+
 
     if (isAdminPage && !isUserAdmin) {
         return NextResponse.redirect(new URL(DEFAULT_USER_REDIRECT_URL, nextUrl))
     }
     return undefined
 })
+
 // Configuration for the middleware, specifying which paths to match
 export const config = {
     // every single page except _next static files are going to invoke middleware

@@ -74,7 +74,7 @@ export function useCss3DIframeOverlay(options: Options) {
     iframe.width = String(widthPx);
     iframe.height = String(heightPx);
     iframe.style.border = "0";
-    iframe.style.borderRadius = "6px";
+    iframe.style.borderRadius = "1px";
     iframe.style.pointerEvents = "auto"; // allow iframe to receive events
     iframe.setAttribute(
       "sandbox",
@@ -102,7 +102,6 @@ export function useCss3DIframeOverlay(options: Options) {
 
     iframeEl = iframe;
 
-    // Additionally intercept wheel at canvas-level if cursor overlaps iframe rect
     onCanvasWheel = (e: WheelEvent) => {
       if (!iframeEl) return;
       const rect = iframeEl.getBoundingClientRect();
@@ -119,15 +118,12 @@ export function useCss3DIframeOverlay(options: Options) {
       capture: true,
     });
 
-    // Compute scale to fit the monitor surface width
     const bbox = new THREE.Box3().setFromObject(monitorMesh);
     const size = new THREE.Vector3();
     bbox.getSize(size);
-    const monitorWidthWorld = size.x > 0 ? size.x : 1.6; // fallback value
+    const monitorWidthWorld = size.x > 0 ? size.x : 1.6;
 
-    // Above formula keeps previous behavior (800px baseline mapped to 25 units)
-    // Simpler: monitorWidthWorld / 25; but we keep widthPx influence if customized
-    cssMonitor.scale.setScalar(monitorWidthWorld / 25);
+    cssMonitor.scale.setScalar(monitorWidthWorld / 22);
   };
 
   const updateCss3D = () => {
