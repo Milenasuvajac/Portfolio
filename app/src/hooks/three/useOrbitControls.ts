@@ -10,7 +10,7 @@ export const useOrbitControls = (camera : THREE.PerspectiveCamera, renderer : TH
     controls.enablePan = true;
     controls.enableZoom = true;
     controls.enableRotate = true;
-    controls.target.set( 27.041438298632446, 2.5881179106863392, 14.655313036686588);
+    controls.target.set( 10.363247838076116, 1.3862396674115351, 14.232906527767916);
     controls.minPolarAngle = 0;
     controls.maxPolarAngle = Math.PI / 2 + 0.15;
     controls.minAzimuthAngle = 0
