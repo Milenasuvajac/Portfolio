@@ -15,13 +15,16 @@ export const GET = async (): Promise<NextResponse> => {
 export const POST = async (request: NextRequest): Promise<NextResponse> => {
   try {
     const body = await request.json()
-    const { name, company, message, contact } = body || {}
+    const { name, company, message, contact, isPrivate } = body || {}
 
-    if (!name || !company || !message || !contact ) {
+    if (!name || !message || !contact ) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const created = await createMessage(name, company, message, contact)
+    // For private messages, company is optional
+    const finalCompany = company || (isPrivate ? 'Private Message' : '')
+
+    const created = await createMessage(name, finalCompany, message, contact)
     return NextResponse.json(created, { status: 201 })
   } catch (e) {
     logger.error(e)

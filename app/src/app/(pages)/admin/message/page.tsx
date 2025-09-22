@@ -41,7 +41,6 @@ export default function AdminMessagePage() {
     }
   }
 
-  // Create or update message
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -74,18 +73,6 @@ export default function AdminMessagePage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete message')
     }
-  }
-
-  // Edit message
-  const handleEdit = (message: Message) => {
-    setEditingMessage(message)
-    setFormData({
-      name: message.name,
-      company: message.company,
-      message: message.message,
-      contact: message.contact,
-    })
-    setShowForm(true)
   }
 
   // Reset form
@@ -224,12 +211,6 @@ export default function AdminMessagePage() {
                 </div>
 
                 <div className="message-actions">
-                  <button 
-                    onClick={() => handleEdit(message)}
-                    className="btn btn-edit"
-                  >
-                    Edit
-                  </button>
                   <button 
                     onClick={() => handleDelete(message.MID)}
                     className="btn btn-delete"

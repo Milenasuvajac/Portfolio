@@ -26,6 +26,7 @@ export const getAllMessages = async () => {
       name: true,
       company: true,
       message: true,
+      contact: true,
     },
   })
 }
@@ -33,18 +34,6 @@ export const getAllMessages = async () => {
 export const getMessageById = async (id: string) => {
   return prisma.message.findUnique({
     where: { MID: Number(id) },
-  })
-}
-
-export const updateMessage = async (id: string, data: Partial<{
-  name: string
-  company: string
-  message: string
-  contact: string
-}>) => {
-  return prisma.message.update({
-    where: { MID: Number(id) },
-    data,
   })
 }
 
