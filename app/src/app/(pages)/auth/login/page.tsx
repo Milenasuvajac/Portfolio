@@ -22,7 +22,9 @@ const Login = () => {
         }
 
         try {
+            logger.log("Form Data: ",formData)
             const result = await login(formData)
+            logger.log("Result: ", result)
             if (result.message) {
                 setSuccess(result.message)
                 window.location.reload()
