@@ -125,9 +125,9 @@ export function useCss3DIframeOverlay(options: Options) {
     bbox.getSize(size);
     const monitorWidthWorld = size.x > 0 ? size.x : 1.6; // fallback value
 
-    // Above formula keeps previous behavior (800px baseline mapped to 25 units)
-    // Simpler: monitorWidthWorld / 25; but we keep widthPx influence if customized
-    cssMonitor.scale.setScalar(monitorWidthWorld / 25);
+    // Above formula keeps previous behavior (800px baseline mapped to 22 units)
+    // Simpler: monitorWidthWorld / 22; but we keep widthPx influence if customized
+    cssMonitor.scale.setScalar(monitorWidthWorld / 22);
   };
 
   const updateCss3D = () => {
