@@ -1,11 +1,8 @@
-Odlično 👌 za **marketinški README** cilj je da odmah “proda” tvoje veštine i pokaže **šta projekat može**, a manje da objašnjava setup i Docker komande. Evo jedne verzije:
-
----
 
 # 🌐 Interactive 3D Portfolio Platform
 
 An innovative portfolio platform that blends **immersive 3D experiences** with a **professional content management system**.
-This project demonstrates expertise in **modern full-stack development, 3D web graphics, security, and user experience design**.
+This project demonstrates expertise in **modern full-stack development**.
 
 ## ✨ Highlights
 
@@ -23,6 +20,11 @@ This platform is more than a portfolio – it’s a **demonstration of advanced 
 * 3D graphics and animations for engaging, interactive experiences
 * Clean architecture with intuitive user interface and role-based access
 * Real-world deployment with containerization and modern DevOps practices
+
+## 🚀 Future Plans & Improvements
+
+If you want to see my roadmap, upcoming features, and improvement plans for this platform, you can check them here:  
+👉 [My Notion Plans](https://www.notion.so/2773d7b9e497804a92aefa28e011c941?v=2773d7b9e49780f8b365000cbc08645e)
 
 ---
 
