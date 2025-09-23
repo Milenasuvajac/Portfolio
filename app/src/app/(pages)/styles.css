@@ -115,11 +115,11 @@ body {
 
 .nav-title {
   color: var(--accent-primary);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   font-size: 1.2rem;
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 .nav-list {
@@ -432,7 +432,7 @@ body {
 }
 
 /* Contact form */
-.contact-form-section {
+.contact-form-section{
   margin-top: 3rem;
   background: var(--bg-secondary);
   padding: 2.5rem;
@@ -638,4 +638,29 @@ html {
 button:focus,
 input:focus,
 textarea:focus {
+}
+
+
+.login-container {
+    width: 50%;
+    margin: 10% auto;
+    background: var(--bg-secondary);
+    padding: 2.5rem;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    box-shadow: 0 15px 35px var(--shadow-light);
+}
+
+.login-container h2 {
+    color: var(--accent-primary);
+    margin-bottom: 1.5rem;
+    font-size: 3rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+
+.login-form {
+    margin: 2em auto;
+    width: 80%;
 }

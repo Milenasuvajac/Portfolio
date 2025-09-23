@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import NavigationMenu from '@/components/NavigationMenu'
 import ContactForm from '@/components/ContactForm'
-import '../styles.css'
+import '../../styles.css'
 
 interface PublicInfo {
   id: number

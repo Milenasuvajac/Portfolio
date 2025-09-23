@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import {login} from "@/actions/login";
 import logger from "@/utils/logger";
+import '../../styles.css'
 
 const Login = () => {
     const [username, setusername] = useState<string>('')
@@ -41,11 +42,11 @@ const Login = () => {
 
     return (
         <main>
-            <div>
-                <h1>Login</h1>
-                <form onSubmit={handleSubmit}>
-                    <div>
-                        <label htmlFor="username">username:</label>
+            <div className='login-container'>
+                <form className="login-form" onSubmit={handleSubmit}>
+                    <h2>Login</h2>
+                    <div className="form-group">
+                        <label htmlFor="username">Username:</label>
                         <input
                             type="username"
                             id="username"
@@ -55,7 +56,7 @@ const Login = () => {
                         />
                     </div>
 
-                    <div>
+                    <div className="form-group">
                         <label htmlFor="password">Password:</label>
                         <input
                             type="password"
@@ -69,7 +70,7 @@ const Login = () => {
                     {error && <p style={{ color: 'red' }}>{error}</p>}
                     {success && <p style={{ color: 'green' }}>{success}</p>}
 
-                    <button type="submit">Login</button>
+                    <button className={"login-button"} type="submit">Login</button>
                 </form>
             </div>
         </main>
