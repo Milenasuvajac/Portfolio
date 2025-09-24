@@ -26,6 +26,8 @@ export function useCss3DIframeOverlay(options: Options) {
   cssRenderer.domElement.style.left = "0";
   cssRenderer.domElement.style.pointerEvents = "none"; // only iframe should receive events
   cssRenderer.domElement.style.zIndex = "1";
+  cssRenderer.domElement.style.overflow = "hidden"; // prevent accidental scroll/jumps
+  cssRenderer.domElement.style.transform = "translateZ(0)"; // stabilize rendering layer
   mountRef.current!.appendChild(cssRenderer.domElement);
 
   // internal refs
@@ -75,7 +77,10 @@ export function useCss3DIframeOverlay(options: Options) {
     iframe.height = String(heightPx);
     iframe.style.border = "0";
     iframe.style.borderRadius = "6px";
-    iframe.style.pointerEvents = "auto"; // allow iframe to receive events
+    iframe.style.display = "block"; // avoid inline layout shifts
+    iframe.style.outline = "none"; // remove focus outline that may cause visual jump
+    //iframe.style.pointerEvents = "none"; // Start disabled for focus mode control
+    iframe.tabIndex = -1; // Not focusable by default
     iframe.setAttribute(
       "sandbox",
       "allow-same-origin allow-scripts allow-forms allow-popups"
@@ -99,6 +104,12 @@ export function useCss3DIframeOverlay(options: Options) {
     iframe.addEventListener("mouseenter", onIFMouseEnter!);
     iframe.addEventListener("mouseleave", onIFMouseLeave!);
     iframe.addEventListener("wheel", onIFWheel!, { passive: true });
+
+    // Prevent click/drag events from bubbling to OrbitControls or causing layout issues
+    iframe.addEventListener("mousedown", (e) => { e.stopPropagation(); }, true);
+    iframe.addEventListener("mouseup", (e) => { e.stopPropagation(); }, true);
+    iframe.addEventListener("click", (e) => { e.stopPropagation(); }, true);
+    iframe.addEventListener("dragstart", (e) => { e.preventDefault(); e.stopPropagation(); }, true);
 
     iframeEl = iframe;
 
@@ -143,6 +154,30 @@ export function useCss3DIframeOverlay(options: Options) {
     cssRenderer.setSize(width, height);
   };
 
+  // Function to control iframe interactivity for focus mode
+  const setIframeInteractive = (interactive: boolean) => {
+    if (!iframeEl) return;
+    
+    if (interactive) {
+      // Enable iframe interaction for focus mode without forcing browser focus (prevents scroll/jump)
+      iframeEl.style.pointerEvents = "auto";
+      iframeEl.tabIndex = 0;
+      // Do NOT call focus() here to avoid potential browser scroll/jump behavior
+    } else {
+      // Disable iframe interaction for normal mode
+      //iframeEl.style.pointerEvents = "none";
+      iframeEl.tabIndex = -1;
+      try {
+        iframeEl.blur();
+      } catch (e) {
+        // Ignore errors
+      }
+    }
+  };
+
+  // Function to get the iframe element
+  const getIframeElement = () => iframeEl;
+
   const cleanup = () => {
     try {
       if (iframeEl) {
@@ -169,5 +204,7 @@ export function useCss3DIframeOverlay(options: Options) {
     updateCss3D,
     handleResize,
     cleanup,
+    setIframeInteractive,
+    getIframeElement,
   };
 }
