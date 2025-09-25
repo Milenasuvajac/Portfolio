@@ -6,17 +6,18 @@ import {CreateUserBody} from "@/dto/UserDTO";
 import {UserSchema} from "@/lib/definitions";
 import {createUser, getAllUsers, userExistsByUsername} from "@/lib/dal/userDal";
 import logger from "@/utils/logger";
+import {isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
 
 export const POST = async (request: NextRequest): Promise<NextResponse> => {
     // Check if the current user has admin privileges
-/*    const isAdmin = await isCurrentUserAdmin()
+    const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
         return new NextResponse('Forbidden', {
             headers: { 'Content-Type': 'text/plain' },
             status: 403,
         })
-    }*/
+    }
 
     const { username, companyName, password } = (await request.json()) as CreateUserBody
 
@@ -50,7 +51,7 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
 }
 
 export const GET = async (): Promise<NextResponse> => {
-/*
+
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
         return new NextResponse('Forbidden', {
@@ -58,7 +59,7 @@ export const GET = async (): Promise<NextResponse> => {
             status: 403,
         })
     }
-*/
+
     try {
         const users = await getAllUsers()
         return NextResponse.json(users)

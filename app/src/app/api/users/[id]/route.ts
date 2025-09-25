@@ -7,6 +7,7 @@ import {deleteUser, getUserById, updateUser} from "@/lib/dal/userDal";
 import {UpdateUserBody} from "@/dto/UserDTO";
 import {UserSchema} from "@/lib/definitions";
 import logger from "@/utils/logger";
+import {isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
 export const GET = async (
     _request: NextRequest, {
@@ -15,19 +16,20 @@ export const GET = async (
         params: Params;
     },
 ): Promise<NextResponse> => {
-    const { id } = params
 
-    if (!/^-?\d+$/.test(id)) {
-        return NextResponse.json({ error: 'Invalid user ID, must be a number' }, { status: 400 })
-    }
-
-/*    const isAdmin = await isCurrentUserAdmin()
+    const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
         return new NextResponse('Forbidden', {
             headers: { 'Content-Type': 'text/plain' },
             status: 403,
         })
-    }*/
+    }
+
+    const { id } = params
+
+    if (!/^-?\d+$/.test(id)) {
+        return NextResponse.json({ error: 'Invalid user ID, must be a number' }, { status: 400 })
+    }
 
     try {
         const user = await getUserById(id)
@@ -44,19 +46,20 @@ export const PUT = async (
     request: NextRequest,
     { params }: {params: Params},
 ): Promise<NextResponse> => {
-    const { id } = params
 
-    if (!/^-?\d+$/.test(id)) {
-        return NextResponse.json({ error: 'Invalid user ID, must be a number' }, { status: 400 })
-    }
-
-/*    const isAdmin = await isCurrentUserAdmin()
+    const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
         return new NextResponse('Forbidden', {
             headers: { 'Content-Type': 'text/plain' },
             status: 403,
         })
-    }*/
+    }
+
+    const { id } = params
+
+    if (!/^-?\d+$/.test(id)) {
+        return NextResponse.json({ error: 'Invalid user ID, must be a number' }, { status: 400 })
+    }
 
     const { username, companyName, password } = (await request.json()) as UpdateUserBody
 
@@ -85,22 +88,21 @@ export const DELETE = async (_request: NextRequest, {
 }: {
     params: Params;
 }): Promise<NextResponse> => {
-    console.log('DELETE method called for user ID:', params.id)
+
+    const isAdmin = await isCurrentUserAdmin()
+    if (!isAdmin) {
+        return new NextResponse('Forbidden', {
+            headers: { 'Content-Type': 'text/plain' },
+            status: 403,
+        })
+    }
+
     const { id } = params
 
     if (!/^-?\d+$/.test(id)) {
         return NextResponse.json({ error: 'Invalid user ID, must be a number' }, { status: 400 })
     }
 
-/*    const isAdmin = await isCurrentUserAdmin()
-    const isThisUser = (await getCurrentUserId()) === id
-    // Return a 403 Forbidden response if the user is neither an admin nor accessing their own data
-    if (!isAdmin && !isThisUser) {
-        return new NextResponse('Forbidden', {
-            headers: { 'Content-Type': 'text/plain' },
-            status: 403,
-        })
-    }*/
     try {
         const deletedUser = await deleteUser(id)
         if (!deletedUser) {

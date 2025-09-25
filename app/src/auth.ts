@@ -3,7 +3,7 @@ import authConfig from './auth.config'
 import logger from "@/utils/logger";
 
 
-export const { signIn, signOut } = NextAuth({
+export const { auth, signIn, signOut } = NextAuth({
   ...authConfig,
   callbacks: {
 
