@@ -8,11 +8,13 @@ import {useThreeScene} from "@/hooks/three/useThreeScene";
 import {createNightSky} from "@/utils/three/materials/createNightSky"
 import {createSea2} from "@/utils/three/materials/createSea2";
 import { useCss3DIframeOverlay } from "@/hooks/three/useCss3DIframeOverlay";
+import ThreeLoadingScreen from "../ui/ThreeLoadingScreen";
 
 export default function ThreeScene() {
     const mountRef = useRef<HTMLDivElement>(null);
     const iframeCleanupRef = useRef<null | (() => void)>(null);
     const [isFocused, setIsFocused] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Focus mode state management
     const monitorRef = useRef<THREE.Mesh | null>(null);
@@ -221,6 +223,8 @@ export default function ThreeScene() {
             if (monitorRef.current) {
                 attachMonitorMesh(monitorRef.current);
             }
+            // Mark loading as complete when room model is loaded
+            setIsLoading(false);
         });
 
         const dirLight = new THREE.DirectionalLight(0xffffff, 2.5);
@@ -378,31 +382,41 @@ export default function ThreeScene() {
     }, []);
 
     return (
-        <div ref={mountRef} style={{ width: "100vw", height: "100vh", position: "relative" }}>
-            {/* Instructions overlay */}
-            <div 
-                style={{
-                    position: "absolute",
-                    top: "20px",
-                    left: "20px",
-                    zIndex: 1000,
-                    backgroundColor: "rgba(0, 0, 0, 0.7)",
-                    color: "white",
-                    padding: "12px 16px",
-                    borderRadius: "8px",
-                    fontFamily: "Arial, sans-serif",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    backdropFilter: "blur(4px)",
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
-                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-                    userSelect: "none",
-                    pointerEvents: "none"
-                }}
-            >
-                {isFocused ? "Press ESC to exit" : "Press SPACE to view my portfolio"}
+        <>
+            {isLoading && (
+                <ThreeLoadingScreen 
+                    onComplete={() => setIsLoading(false)}
+                    minDisplayTime={2500}
+                />
+            )}
+            <div ref={mountRef} style={{ width: "100vw", height: "100vh", position: "relative" }}>
+                {/* Instructions overlay */}
+                <div 
+                    style={{
+                        position: "absolute",
+                        top: "20px",
+                        left: "20px",
+                        zIndex: 1000,
+                        backgroundColor: "rgba(0, 0, 0, 0.7)",
+                        color: "white",
+                        padding: "12px 16px",
+                        borderRadius: "8px",
+                        fontFamily: "Arial, sans-serif",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        backdropFilter: "blur(4px)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+                        userSelect: "none",
+                        pointerEvents: "none",
+                        opacity: isLoading ? 0 : 1,
+                        transition: "opacity 0.5s ease"
+                    }}
+                >
+                    {isFocused ? "Press ESC to exit" : "Press SPACE to view my portfolio"}
+                </div>
+                {/* Monitor Focus Mode: Press Space to toggle focus, Esc to exit focus, or click the monitor */}
             </div>
-            {/* Monitor Focus Mode: Press Space to toggle focus, Esc to exit focus, or click the monitor */}
-        </div>
+        </>
     );
 }
