@@ -4,7 +4,15 @@ import logger from '@/utils/logger'
 import {isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
 export const GET = async (): Promise<NextResponse> => {
-  try {
+    const isAdmin = await isCurrentUserAdmin()
+    if (!isAdmin) {
+        return new NextResponse('Forbidden', {
+            headers: { 'Content-Type': 'text/plain' },
+            status: 403,
+        })
+    }
+
+    try {
     const items = await getAllInfos()
     return NextResponse.json(items)
   } catch (e) {

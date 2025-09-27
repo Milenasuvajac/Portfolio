@@ -211,8 +211,8 @@ body {
   flex: 1 !important;
   background: var(--bg-primary) !important;
   margin-left: 280px !important;
+  margin-right: 280px !important;
   padding: 0 !important;
-  overflow-y: auto !important;
   min-height: 100vh !important;
 }
 
@@ -223,7 +223,7 @@ body {
 
 /* Sticky page header */
 .page-header {
-  position: sticky;
+  position: static;
   top: 0;
   background: var(--bg-primary);
   z-index: 100;
@@ -232,7 +232,7 @@ body {
 }
 
 .page-header h1 {
-  font-size: 2.5rem;
+  font-size: 3rem;
   font-weight: 800;
   margin-bottom: 0.5rem;
   background: var(--gradient-primary);
@@ -245,7 +245,7 @@ body {
 .page-header p {
   font-size: 1.1rem;
   color: var(--text-muted);
-  margin: 0;
+  margin: 2em;
   animation: fadeInUp 0.8s ease-out 0.2s both;
 }
 
@@ -259,6 +259,7 @@ body {
   
   .main-content {
     margin-left: 0;
+    margin-right: 0;
   }
   
   .app-container {
@@ -340,10 +341,14 @@ body {
 }
 
 .content-section h2 {
+  position: sticky;
+  top: 0;
+  z-index: 300;
   color: var(--accent-primary);
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
   font-size: 2rem;
   font-weight: 700;
+  background: var(--bg-primary);
 }
 
 /* Cards */
@@ -354,17 +359,6 @@ body {
 }
 
 .info-card:hover {
-}
-
-.private-badge {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
-  font-weight: 600;
 }
 
 .photo-container {
@@ -534,7 +528,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--accent-primary);
+  color: var(--bg-primary);
   text-decoration: none;
   font-weight: 600;
   padding: 1rem 1.5rem;
@@ -663,4 +657,276 @@ textarea:focus {
 .login-form {
     margin: 2em auto;
     width: 80%;
+}
+
+/* Technologies Grid Styles */
+.technologies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.technology-item {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.technology-item:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(236, 72, 153, 0.15);
+  border-color: var(--accent-primary);
+}
+
+.technology-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.1), transparent);
+  transition: left 0.6s;
+}
+
+.technology-item:hover::before {
+  left: 100%;
+}
+
+.tech-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1rem;
+  border-radius: 12px;
+  background: var(--gradient-primary);
+  position: relative;
+  z-index: 1;
+}
+
+.tech-icon img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.tech-info {
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.tech-info h3 {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.tech-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s ease;
+}
+
+.technology-item:hover .tech-description {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Experience Content Styles */
+.experience-content h3 {
+  color: var(--accent-primary);
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.experience-content p {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.experience-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Document Content Styles */
+.document-content h3 {
+  color: var(--accent-primary);
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.document-content p {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.document-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.document-content a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: var(--gradient-primary);
+  color: white;
+  display: inline-block;
+  margin-top: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.document-content a:hover {
+  background: var(--gradient-secondary);
+  transform: translateY(-2px);
+}
+
+/* Project Content Styles */
+.project-content h3 {
+  color: var(--accent-primary);
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.project-content p {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.project-content strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.project-content a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: var(--gradient-primary);
+  color: white;
+  display: inline-block;
+  margin-top: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.project-content a:hover {
+  background: var(--gradient-secondary);
+  transform: translateY(-2px);
+}
+
+/* Additional component styles */
+.experience-description, .experience-responsibilities {
+  margin-bottom: 1.5rem;
+}
+
+.experience-description h4, .experience-responsibilities h4 {
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.document-item, .project-item {
+  width: 100%;
+}
+
+.document-details, .project-details {
+  margin-top: 1rem;
+}
+
+.document-details p, .project-details p {
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.project-technologies, .project-description, .project-link {
+  margin-bottom: 1rem;
+}
+
+.project-technologies h4, .project-description h4, .project-link h4 {
+  color: var(--accent-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.tech-info h4 {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Responsive adjustments for new components */
+@media (max-width: 768px) {
+  .technologies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+  
+  .technology-item {
+    padding: 1rem;
+  }
+  
+  .tech-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .tech-icon img {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .tech-info h3 {
+    font-size: 1rem;
+  }
+  
+  .tech-description {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .technologies-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sticky auth button at top-right */
+.sticky-auth {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1100;
+}
+
+.sticky-auth .login-button {
+  width: 6rem;
+  height: 36px;
+  padding: 0 4px;
+  border-radius: 10px;
 }
