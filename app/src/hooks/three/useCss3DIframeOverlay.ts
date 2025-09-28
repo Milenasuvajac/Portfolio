@@ -165,7 +165,7 @@ export function useCss3DIframeOverlay(options: Options) {
       // Do NOT call focus() here to avoid potential browser scroll/jump behavior
     } else {
       // Disable iframe interaction for normal mode
-      //iframeEl.style.pointerEvents = "none";
+      iframeEl.style.pointerEvents = "none";
       iframeEl.tabIndex = -1;
       try {
         iframeEl.blur();

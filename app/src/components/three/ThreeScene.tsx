@@ -9,6 +9,8 @@ import {createNightSky} from "@/utils/three/materials/createNightSky"
 import {createSea2} from "@/utils/three/materials/createSea2";
 import { useCss3DIframeOverlay } from "@/hooks/three/useCss3DIframeOverlay";
 import ThreeLoadingScreen from "../ui/ThreeLoadingScreen";
+import { animateCameraTo, stepCameraAnimation } from "@/utils/three/animation/cameraAnimation";
+import { calculateMonitorFocusPosition } from "@/utils/three/animation/cameraTargets";
 
 export default function ThreeScene() {
     const mountRef = useRef<HTMLDivElement>(null);
@@ -40,44 +42,6 @@ export default function ThreeScene() {
         const { scene, camera, renderer } = useThreeScene(mountRef);
         const controls = useOrbitControls(camera, renderer);
 
-        // Smooth easing function
-        const easeInOutCubic = (t: number): number => {
-            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-        };
-
-        const calculateMonitorFocusPosition = (monitorMesh: THREE.Mesh) => {
-            const monitorCenter = new THREE.Vector3();
-            monitorMesh.getWorldPosition(monitorCenter);
-        
-            // Force global orientation: face toward global +X with world up
-            const forward = new THREE.Vector3(1, 0, 0); // look direction
-            const up = new THREE.Vector3(0, 1, 0);       // keep horizon level
-        
-            // Deterministic fixed offsets (independent of current camera and monitor transforms)
-            const offset = 2.5; // distance in front along global -X
-            const upOffset = 0.3; // slight up tilt
-        
-            const cameraPos = monitorCenter.clone()
-                .add(forward.clone().multiplyScalar(offset))
-                .add(up.clone().multiplyScalar(upOffset));
-        
-            return { position: cameraPos, target: monitorCenter, up };
-        };
-
-        const animateCameraTo = (targetPos: THREE.Vector3, targetTarget: THREE.Vector3, duration: number = 800) => {
-            if (animationRef.current?.isAnimating) return;
-        
-            animationRef.current = {
-                startTime: performance.now(),
-                duration,
-                startPos: camera.position.clone(),
-                startTarget: controls.target.clone(),
-                endPos: targetPos.clone(),
-                endTarget: targetTarget.clone(),
-                isAnimating: true
-            };
-        };
-
         // Helper function: Focus monitor
         const focusMonitor = () => {
             // Block re-entry while animating
@@ -99,13 +63,13 @@ export default function ThreeScene() {
             camera.up.copy(up);
         
             // Start animation
-            animateCameraTo(position, target);
+            animateCameraTo(camera, controls, position, target, animationRef);
             focusRef.current = true;
             setIsFocused(true);
         
-            // Enable iframe interaction
+            // Enable iframe interaction (only the iframe should capture events)
             setIframeInteractive(true);
-        
+
             // Route mouse events to CSS3D overlay while focused
             try {
                 renderer.domElement.style.pointerEvents = 'none';
@@ -113,7 +77,7 @@ export default function ThreeScene() {
                 cssRenderer.domElement.style.zIndex = '2';
                 renderer.domElement.style.zIndex = '1';
             } catch {}
-        
+
             // Attach key listeners inside iframe so Esc/Space work without mouse click
             attachIframeKeyListeners();
         };
@@ -125,20 +89,21 @@ export default function ThreeScene() {
             if (!focusRef.current || !savedCamRef.current) return;
         
             // Start animation back to saved position
-            animateCameraTo(savedCamRef.current.position, savedCamRef.current.target);
+            animateCameraTo(camera, controls, savedCamRef.current.position, savedCamRef.current.target, animationRef);
             focusRef.current = false;
             setIsFocused(false);
         
             // Disable iframe interaction
             setIframeInteractive(false);
-        
+
             // Restore mouse events to WebGLRenderer when not focused
             try {
                 renderer.domElement.style.pointerEvents = 'auto';
+                cssRenderer.domElement.style.pointerEvents = 'none';
                 cssRenderer.domElement.style.zIndex = '';
                 renderer.domElement.style.zIndex = '';
             } catch {}
-        
+
             // Detach iframe key listeners if attached
             if (iframeCleanupRef.current) {
                 try { iframeCleanupRef.current(); } catch {}
@@ -285,50 +250,7 @@ export default function ThreeScene() {
             requestAnimationFrame(animate);
 
             // Handle camera animation
-            if (animationRef.current?.isAnimating) {
-                const elapsed = performance.now() - animationRef.current.startTime;
-                const progress = Math.min(elapsed / animationRef.current.duration, 1);
-                const easedProgress = easeInOutCubic(progress);
-
-                camera.position.lerpVectors(
-                    animationRef.current.startPos,
-                    animationRef.current.endPos,
-                    easedProgress
-                );
-                controls.target.lerpVectors(
-                    animationRef.current.startTarget,
-                    animationRef.current.endTarget,
-                    easedProgress
-                );
-            
-                // Ensure camera is always oriented toward the current target while animating
-                camera.lookAt(controls.target);
-            
-                if (progress >= 1) {
-                    animationRef.current.isAnimating = false;
-
-                    if (focusRef.current) {
-                        controls.enabled = false;
-                        controls.enableRotate = false;
-                        controls.enableZoom = false;
-                        controls.enablePan = false;
-
-                        // Final orientation at the end of focus animation
-                        camera.lookAt(controls.target);
-                    } else {
-                        if (savedCamRef.current) {
-                            controls.enabled = savedCamRef.current.controlsEnabled;
-                            controls.enableRotate = true;
-                            controls.enableZoom = true;
-                            controls.enablePan = true;
-
-                            // Restore camera up vector and orientation
-                            camera.up.copy(new THREE.Vector3(0, 1, 0));
-                            camera.lookAt(controls.target);
-                        }
-                    }
-                }
-            }
+            stepCameraAnimation(camera, controls, focusRef, savedCamRef, animationRef);
 
             // Only update controls if not in focus mode or animating
             if (!focusRef.current && !animationRef.current?.isAnimating) {
