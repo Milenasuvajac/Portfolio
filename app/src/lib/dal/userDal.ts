@@ -1,10 +1,9 @@
-import {PrismaClient} from '@prisma/client'
+import prisma from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import logger from "@/utils/logger";
 import {LoginUserDTO, UpdateUserBody, UserDTO} from "@/dto/UserDTO";
 
-// Initialize Prisma client for database interaction
-const prisma = new PrismaClient()
+// Use shared Prisma client for database interaction
 
 export const userExistsByUsername = async (username: string): Promise<boolean> => {
     const existingUser = await prisma.user.findFirst({
