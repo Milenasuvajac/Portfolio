@@ -49,11 +49,12 @@ export default auth(async req => {
     if (isAdminPage && !isUserAdmin) {
         return NextResponse.redirect(new URL(DEFAULT_USER_REDIRECT_URL, nextUrl))
     }
-    return undefined
+    // Explicitly continue the request when no redirect was made
+    return NextResponse.next()
 })
 // Configuration for the middleware, specifying which paths to match
 // @ts-ignore
 export const config = {
-    // every single page except _next static files are going to invoke middleware
-    matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
+    // Apply middleware to application pages only (exclude API routes)
+    matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/'],
 }
