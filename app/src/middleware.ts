@@ -23,6 +23,13 @@ export default auth(async req => {
     const token = await getToken({ req, secret })
     const isUserAdmin = token?.role === 'ADMIN'
 
+    // Avoid HTML redirects for API requests so clients can get proper JSON responses
+    // Let API routes handle their own authorization (most already do)
+    const isApiRequest = nextUrl.pathname.startsWith('/api')
+    if (isApiRequest) {
+        return NextResponse.next()
+    }
+
     const isAuthPage = authRoutes.includes(nextUrl.pathname)
     const isAdminPage = nextUrl.pathname.includes('/admin')
     const isPublicPage = publicRoutes.includes(nextUrl.pathname)

@@ -1,6 +1,6 @@
 import {NextResponse} from "next/server";
 import {getCurrentUser} from "@/lib/dal/currentSessionDal";
-import {getAllInfos} from "@/lib/dal/infoDal";
+import {getPrivateInfos} from "@/lib/dal/infoDal";
 import logger from "@/utils/logger";
 
 export const GET = async (): Promise<NextResponse> => {
@@ -12,7 +12,7 @@ export const GET = async (): Promise<NextResponse> => {
         })
     }
     try {
-        const items = await getAllInfos()
+        const items = await getPrivateInfos()
         return NextResponse.json(items)
     } catch (e) {
         logger.error(e)

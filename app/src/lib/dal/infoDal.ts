@@ -39,6 +39,39 @@ export const getAllInfos = async () => {
   })
 }
 
+export const getPublicInfos = async () => {
+    return prisma.info.findMany({
+        where: {
+            visibility: true,
+        },
+        select: {
+            IID: true,
+            photo: true,
+            text: true,
+            visibility: true,
+            contact: true,
+            cv: true,
+        },
+    })
+}
+
+export const getPrivateInfos = async () => {
+    return prisma.info.findMany({
+        where: {
+            visibility: false,
+        },
+        select: {
+            IID: true,
+            photo: true,
+            text: true,
+            visibility: true,
+            contact: true,
+            cv: true,
+        },
+    })
+}
+
+
 export const getInfoById = async (id: string) => {
   return prisma.info.findUnique({
     where: { IID: Number(id) },

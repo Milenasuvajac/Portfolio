@@ -37,9 +37,21 @@ export default function AboutMePublic() {
       const response = await fetch('/api/info/public')
       console.log('Info response status:', response.status)
       if (response.ok) {
-        const data = await response.json()
-        console.log('Info data:', data)
-        setInfo(data)
+        const contentType = response.headers.get('content-type') || ''
+        if (!contentType.includes('application/json')) {
+          console.error('Info endpoint returned non-JSON content-type:', contentType)
+          return
+        }
+        const raw = await response.json()
+        const normalized = Array.isArray(raw)
+          ? raw.map((i: any, idx: number) => ({
+              id: i?.id ?? i?.IID ?? idx,
+              text: i?.text ?? '',
+              visibility: Boolean(i?.visibility),
+            }))
+          : []
+        console.log('Info data (normalized):', normalized)
+        setInfo(normalized)
       } else {
         console.error('Info response not ok:', response.status, response.statusText)
       }
@@ -54,9 +66,22 @@ export default function AboutMePublic() {
       const response = await fetch('/api/technology')
       console.log('Technologies response status:', response.status)
       if (response.ok) {
-        const data = await response.json()
-        console.log('Technologies data:', data)
-        setTechnologies(data)
+        const contentType = response.headers.get('content-type') || ''
+        if (!contentType.includes('application/json')) {
+          console.error('Technology endpoint returned non-JSON content-type:', contentType)
+          return
+        }
+        const raw = await response.json()
+        const normalized = Array.isArray(raw)
+          ? raw.map((t: any, idx: number) => ({
+              id: t?.id ?? t?.TID ?? idx,
+              name: t?.name ?? '',
+              description: t?.description ?? '',
+              icon: t?.icon ?? undefined,
+            }))
+          : []
+        console.log('Technologies data (normalized):', normalized)
+        setTechnologies(normalized)
       } else {
         console.error('Technologies response not ok:', response.status, response.statusText)
       }
