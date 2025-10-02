@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader.js";
+import type { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import {createSimpleMeshMaterial} from "@/utils/three/materials/createSimpleMeshMaterial";
 import {createRockWithMossMaterial} from "@/utils/three/materials/createRockWithMossMaterial";
 import {createSeaweedMaterial} from "@/utils/three/materials/createSeaweedMaterial";
@@ -12,7 +13,7 @@ import {createMonitorMaterial} from "@/utils/three/materials/createMonitorMateri
 
 
 // Handle the GLTF loading and material assignments
-export const useRoomModel = (scene: THREE.Scene, onLoaded?: (gltf: any) => void) => {
+export const useRoomModel = (scene: THREE.Scene, onLoaded?: (gltf: GLTF) => void) => {
     const textureLoader = new THREE.TextureLoader();
 
     const catTexture = textureLoader.load('/textures/Color_7c0ec996-cf6b-498a-a581-82a24d8f65b2.png');
@@ -24,54 +25,61 @@ export const useRoomModel = (scene: THREE.Scene, onLoaded?: (gltf: any) => void)
             const model = gltf.scene;
             model.scale.set(1, 1, 1);
 
-            gltf.scene.traverse((child: any) => {
+            gltf.scene.traverse((child: THREE.Object3D) => {
                 if(!child.name.includes("Sun")) {
                     child.castShadow = true;
                 }
-                if (child.material && child.material.name.includes("Glass")) {
-                    child.material = glassMaterial;
-                }
-                if (child.material && child.material.name.includes("Hanging Plant")) {
-                    child.material = hangingPlantMaterial;
-                }
-                if (child.name === "cat") {
-                    child.material.map = catTexture;
-                    child.material.roughness = 0.9;
-                    child.material.metalness = 0.0;
-                    child.material.needsUpdate = true;
-                    catTexture.wrapS = THREE.RepeatWrapping;
-                    catTexture.wrapT = THREE.RepeatWrapping;
-                    catTexture.flipY = false;
-                    child.castShadow = true;
-                }
-                if (child.material && child.material.name.includes("Wood")) {
-                    child.material = createWoodMaterial();
-                    child.castShadow = true;
-                    child.receiveShadow = true;
 
-                }
-                if (child.name.includes("cookie")){
-                    child.material = createChocolateCookieMaterial();
-                }
-                if (child.name.includes("Seaweed")){
-                    child.material = createSeaweedMaterial();
-                }
-                if (child.name.includes("Mossy")){
-                    child.material = createRockWithMossMaterial();
-                }
-                if (child.material && child.material.name.includes("Speaker Inside"))
-                {
-                    child.material = createSimpleMeshMaterial();
-                }
-                if (child.name == "Water") {
-                    child.material = createWaterMaterial();
-                }
-                if (child.material && child.material.name.includes("Material.011")) {
-                    // Tag monitor surface for later alignment of CSS3D iframe
-                    child.userData.isMonitorSurface = true;
-                    child.material = createMonitorMaterial();
-                    child.castShadow = false;
-                    child.receiveShadow = true;
+                // Only meshes have materials; narrow the type accordingly
+                if (child instanceof THREE.Mesh) {
+                    const firstMaterial = Array.isArray(child.material) ? child.material[0] : child.material;
+                    const matName = firstMaterial?.name ?? "";
+
+                    if (matName.includes("Glass")) {
+                        child.material = glassMaterial;
+                    }
+                    if (matName.includes("Hanging Plant")) {
+                        child.material = hangingPlantMaterial;
+                    }
+                    if (child.name === "cat" && !Array.isArray(child.material)) {
+                        const stdMat = child.material as THREE.MeshStandardMaterial;
+                        stdMat.map = catTexture;
+                        stdMat.roughness = 0.9;
+                        stdMat.metalness = 0.0;
+                        stdMat.needsUpdate = true;
+                        catTexture.wrapS = THREE.RepeatWrapping;
+                        catTexture.wrapT = THREE.RepeatWrapping;
+                        catTexture.flipY = false;
+                        child.castShadow = true;
+                    }
+                    if (matName.includes("Wood")) {
+                        child.material = createWoodMaterial();
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+
+                    }
+                    if (child.name.includes("cookie")){
+                        child.material = createChocolateCookieMaterial();
+                    }
+                    if (child.name.includes("Seaweed")){
+                        child.material = createSeaweedMaterial();
+                    }
+                    if (child.name.includes("Mossy")){
+                        child.material = createRockWithMossMaterial();
+                    }
+                    if (matName.includes("Speaker Inside")) {
+                        child.material = createSimpleMeshMaterial();
+                    }
+                    if (child.name == "Water") {
+                        child.material = createWaterMaterial();
+                    }
+                    if (matName.includes("Material.011")) {
+                        // Tag monitor surface for later alignment of CSS3D iframe
+                        child.userData.isMonitorSurface = true;
+                        child.material = createMonitorMaterial();
+                        child.castShadow = false;
+                        child.receiveShadow = true;
+                    }
                 }
 
             });

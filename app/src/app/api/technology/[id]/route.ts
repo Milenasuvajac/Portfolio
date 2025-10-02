@@ -1,12 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { Params } from '@/dto/RequestDTO'
+import { NextResponse } from 'next/server'
 import { deleteTechnology, getTechnologyById, updateTechnology } from '@/lib/dal/technologyDal'
 import logger from '@/utils/logger'
 import {isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
 const isNumericId = (id: string) => /^-?\d+$/.test(id)
 
-export const GET = async (_req: NextRequest, { params }: { params: Params }) => {
+export const GET = async (
+  _req: Request,
+  context: unknown
+) => {
+  const { params } = context as { params: { id: string } };
     const { id } = params
     if (!isNumericId(id)) return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
     try {
@@ -18,7 +21,11 @@ export const GET = async (_req: NextRequest, { params }: { params: Params }) => 
     }
 }
 
-export const PUT = async (req: NextRequest, { params }: { params: Params }) => {
+export const PUT = async (
+  req: Request,
+  context: unknown
+) => {
+  const { params } = context as { params: { id: string } };
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
         return new NextResponse('Forbidden', {
@@ -32,7 +39,7 @@ export const PUT = async (req: NextRequest, { params }: { params: Params }) => {
     const body = await req.json()
     const { icon, name, description } = body || {}
 
-    const data: any = {}
+  const data: Record<string, unknown> = {}
     if (icon !== undefined) data.icon = icon
     if (name !== undefined) data.name = name
     if (description !== undefined) data.description = description
@@ -49,7 +56,11 @@ export const PUT = async (req: NextRequest, { params }: { params: Params }) => {
   }
 }
 
-export const DELETE = async (_req: NextRequest, { params }: { params: Params }) => {
+export const DELETE = async (
+  _req: Request,
+  context: unknown
+) => {
+  const { params } = context as { params: { id: string } };
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
         return new NextResponse('Forbidden', {

@@ -1,12 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { Params } from '@/dto/RequestDTO'
+import { NextResponse } from 'next/server'
 import { deleteMessage, getMessageById } from '@/lib/dal/messageDal'
 import logger from '@/utils/logger'
 import {isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
 const isNumericId = (id: string) => /^-?\d+$/.test(id)
 
-export const GET = async (_req: NextRequest, { params }: { params: Params }) => {
+export const GET = async (
+  _req: Request,
+  context: unknown
+) => {
+  const { params } = context as { params: { id: string } };
 
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
@@ -26,7 +29,11 @@ export const GET = async (_req: NextRequest, { params }: { params: Params }) => 
     }
 }
 
-export const DELETE = async (_req: NextRequest, { params }: { params: Params }) => {
+export const DELETE = async (
+  _req: Request,
+  context: unknown
+) => {
+  const { params } = context as { params: { id: string } };
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
         return new NextResponse('Forbidden', {

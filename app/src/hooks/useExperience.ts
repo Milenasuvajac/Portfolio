@@ -18,10 +18,11 @@ export const useExperience = (): UseExperienceReturn => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleApiError = (error: any, defaultMessage: string) => {
-    console.error('API Error:', error)
-    if (error.message) {
-      setError(error.message)
+  const handleApiError = (err: unknown, defaultMessage: string) => {
+    console.error('API Error:', err)
+    if (typeof err === 'object' && err !== null && 'message' in err) {
+      const msg = (err as { message?: string }).message
+      setError(typeof msg === 'string' ? msg : defaultMessage)
     } else {
       setError(defaultMessage)
     }

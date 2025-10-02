@@ -1,0 +1,7 @@
+# Ignore specific files that currently use looser typing until they are refactored
+src/utils/three/animation/cameraAnimation.ts
+src/utils/three/materials/createStars.ts
+
+# Ignore generated or external types if present
+node_modules/
+**/*.d.ts

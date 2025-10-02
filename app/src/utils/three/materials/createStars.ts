@@ -3,9 +3,9 @@ import * as THREE from "three";
 export async function createStars(skyGroup: THREE.Group) {
 
     const res = await fetch("/BSC_filtered.json");
-    const starCatalog = await res.json();
+    const starCatalog = await res.json() as StarRecord[];
 
-    starCatalog.forEach((st: any) => {
+    starCatalog.forEach((st: StarRecord) => {
         const raParts = st.RA.split(":").map(parseFloat);
         const ra =
             (raParts[0] / 24 +
@@ -43,7 +43,14 @@ export async function createStars(skyGroup: THREE.Group) {
     });
 }
 
-function spectralTypeToColor(spectral: string): number {
+type StarRecord = {
+    RA: string;
+    DEC: string;
+    MAG: string;
+    "Title HD"?: string;
+};
+
+function spectralTypeToColor(spectral: string | undefined): number {
     if (!spectral) return 0xffffff;
     const type = spectral[0].toUpperCase();
 

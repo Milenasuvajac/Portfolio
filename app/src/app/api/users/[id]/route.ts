@@ -1,8 +1,4 @@
-// This route handles the deletion, retrieval, and update of a specific user from the database.
-// It requires the user's ID as a parameter in the URL.
-
-import { NextRequest, NextResponse } from 'next/server'
-import {Params} from "@/dto/RequestDTO";
+import { NextResponse } from 'next/server'
 import {deleteUser, getUserById, updateUser} from "@/lib/dal/userDal";
 import {UpdateUserBody} from "@/dto/UserDTO";
 import {UserSchema} from "@/lib/definitions";
@@ -10,12 +6,10 @@ import logger from "@/utils/logger";
 import {isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
 export const GET = async (
-    _request: NextRequest, {
-        params,
-    }: {
-        params: Params;
-    },
+    _request: Request,
+    context: unknown,
 ): Promise<NextResponse> => {
+    const { params } = context as { params: { id: string } };
 
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
@@ -43,9 +37,10 @@ export const GET = async (
 }
 
 export const PUT = async (
-    request: NextRequest,
-    { params }: {params: Params},
+    request: Request,
+    context: unknown,
 ): Promise<NextResponse> => {
+    const { params } = context as { params: { id: string } };
 
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
@@ -83,11 +78,11 @@ export const PUT = async (
     }
 }
 
-export const DELETE = async (_request: NextRequest, {
-    params,
-}: {
-    params: Params;
-}): Promise<NextResponse> => {
+export const DELETE = async (
+    _request: Request,
+    context: unknown,
+): Promise<NextResponse> => {
+    const { params } = context as { params: { id: string } };
 
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {

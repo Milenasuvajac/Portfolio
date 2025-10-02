@@ -12,9 +12,19 @@ export type CameraAnimationState = {
   isAnimating: boolean;
 };
 
+// Minimal controls interface needed by the camera animation helpers.
+// Matches the subset of OrbitControls we use.
+export interface CameraControlsLike {
+  target: THREE.Vector3;
+  enabled: boolean;
+  enableRotate: boolean;
+  enableZoom: boolean;
+  enablePan: boolean;
+}
+
 export function animateCameraTo(
   camera: THREE.PerspectiveCamera,
-  controls: any,
+  controls: CameraControlsLike,
   targetPos: THREE.Vector3,
   targetTarget: THREE.Vector3,
   animationRef: MutableRefObject<CameraAnimationState | null>,
@@ -35,7 +45,7 @@ export function animateCameraTo(
 
 export function stepCameraAnimation(
   camera: THREE.PerspectiveCamera,
-  controls: any,
+  controls: CameraControlsLike,
   focusRef: MutableRefObject<boolean>,
   savedCamRef: MutableRefObject<{
     position: THREE.Vector3;

@@ -29,10 +29,14 @@ export const createUser = async (
                 companyName,
                 password: hashedPassword, // Store hashed password in the database
             },
+            select: {
+                username: true,
+                companyName: true,
+                UID: true,
+            },
         })
 
-        const { password, ...userWithoutPassword } = newUser
-        return userWithoutPassword
+        return newUser
     } catch (e) {
         logger.error('Error in CreateUser: ', e)
         return null
@@ -54,14 +58,17 @@ export const getUserById = async (userId: string): Promise<UserDTO | null> => {
         where: {
             UID: Number(userId),
         },
+        select: {
+            username: true,
+            companyName: true,
+            UID: true,
+        },
     })
 
     if (!user) {
         return null
     }
-
-    const { password, ...userWithoutPassword } = user
-    return userWithoutPassword
+    return user
 }
 
 export const getUserByUsername = async (
@@ -107,12 +114,16 @@ export const updateUser = async (
 export const deleteUser = async (userId: string): Promise<object | null> => {
     const deletedUser = await prisma.user.delete({
         where: { UID: Number(userId) },
+        select: {
+            username: true,
+            companyName: true,
+            UID: true,
+        },
     })
 
     if (!deletedUser) {
         return null
     }
 
-    const { password, ...userWithoutPassword } = deletedUser
-    return userWithoutPassword
+    return deletedUser
 }

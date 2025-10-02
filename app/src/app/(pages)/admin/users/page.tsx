@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import '../../../users.css'
-import { UserDTO } from '@/dto/UserDTO'
+import { UserDTO, CreateUserBody, UpdateUserBody } from '@/dto/UserDTO'
 import { UserTable } from '@/components/ui/UserTable'
 import { UserForm } from '@/components/ui/UserForm'
 import { Modal } from '@/components/ui/Modal'
@@ -52,12 +52,12 @@ export default function UsersPage() {
     }
   }
 
-  const handleFormSubmit = async (userData: Partial<UserDTO>) => {
+  const handleFormSubmit = async (userData: CreateUserBody | UpdateUserBody) => {
     try {
       if (editingUser) {
-        await updateUser(editingUser.UID!, userData)
+        await updateUser(editingUser.UID!, userData as Partial<UpdateUserBody>)
       } else {
-        await createUser(userData)
+        await createUser(userData as CreateUserBody)
       }
       setIsModalOpen(false)
       setEditingUser(null)

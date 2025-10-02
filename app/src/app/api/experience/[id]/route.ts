@@ -1,12 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { Params } from '@/dto/RequestDTO'
+import { NextResponse } from 'next/server'
 import { deleteExperience, getExperienceById, updateExperience } from '@/lib/dal/experienceDal'
 import logger from '@/utils/logger'
 import {getCurrentUser, isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
 const isNumericId = (id: string) => /^-?\d+$/.test(id)
 
-export const GET = async (_req: NextRequest, { params }: { params: Params }) => {
+export const GET = async (
+  _req: Request,
+  context: unknown
+) => {
+  const { params } = context as { params: { id: string } };
 
     const user = await getCurrentUser();
     if (!user) {
@@ -26,7 +29,11 @@ export const GET = async (_req: NextRequest, { params }: { params: Params }) => 
     }
 }
 
-export const PUT = async (req: NextRequest, { params }: { params: Params }) => {
+export const PUT = async (
+  req: Request,
+  context: unknown
+) => {
+  const { params } = context as { params: { id: string } };
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
         return new NextResponse('Forbidden', {
@@ -39,7 +46,7 @@ export const PUT = async (req: NextRequest, { params }: { params: Params }) => {
     try {
         const body = await req.json()
         const { description, myResp, company } = body || {}
-        const data: any = {}
+  const data: Record<string, unknown> = {}
         if (description !== undefined) data.description = description
         if (myResp !== undefined) data.myResp = myResp
         if (company !== undefined) data.company = company
@@ -54,7 +61,11 @@ export const PUT = async (req: NextRequest, { params }: { params: Params }) => {
     }
 }
 
-export const DELETE = async (_req: NextRequest, { params }: { params: Params }) => {
+export const DELETE = async (
+  _req: Request,
+  context: unknown
+) => {
+  const { params } = context as { params: { id: string } };
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
         return new NextResponse('Forbidden', {

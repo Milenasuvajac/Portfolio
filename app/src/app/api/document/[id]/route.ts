@@ -1,5 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { Params } from '@/dto/RequestDTO'
+import { NextResponse } from 'next/server'
 import { deleteDocument, getDocumentById, updateDocument } from '@/lib/dal/documentDal'
 import logger from '@/utils/logger'
 import {getCurrentUser, isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
@@ -7,9 +6,10 @@ import {getCurrentUser, isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 const isNumericId = (id: string) => /^-?\d+$/.test(id)
 
 export const GET = async (
-  _req: NextRequest,
-  { params }: { params: Params }
+    _request: Request,
+    context: unknown,
 ): Promise<NextResponse> => {
+    const { params } = context as { params: { id: string } };
     const { id } = params
     if (!isNumericId(id)) {
     return NextResponse.json({ error: 'Invalid ID, must be a number' }, { status: 400 })
@@ -31,9 +31,10 @@ export const GET = async (
 }
 
 export const PUT = async (
-  req: NextRequest,
-  { params }: { params: Params }
+  req: Request,
+  context: unknown
 ): Promise<NextResponse> => {
+    const { params } = context as { params: { id: string } };
     const { id } = params
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
@@ -45,7 +46,7 @@ export const PUT = async (
     try {
         const body = await req.json()
         const { name, year, document, issuer, language, comment } = body || {}
-        const data: any = {}
+        const data: Record<string, unknown> = {}
         if (name !== undefined) data.name = name
         if (year !== undefined) {
           const yearNum = typeof year === 'string' ? parseInt(year, 10) : year
@@ -72,9 +73,10 @@ export const PUT = async (
 }
 
 export const DELETE = async (
-  _req: NextRequest,
-  { params }: { params: Params }
+  _req: Request,
+  context: unknown
 ): Promise<NextResponse> => {
+    const { params } = context as { params: { id: string } };
     const { id } = params
     if (!isNumericId(id)) {
     return NextResponse.json({ error: 'Invalid ID, must be a number' }, { status: 400 })

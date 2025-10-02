@@ -12,7 +12,3 @@ coverage
 .env
 .env.*
 .vercel
-
-public/models
-public/textures
-public/images

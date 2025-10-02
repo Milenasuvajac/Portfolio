@@ -1,5 +1,4 @@
-/* eslint-disable no-console */
-/* eslint-disable no-restricted-syntax */
+// Logger utility
 
 /**
  * Logger utility for development mode.
@@ -16,9 +15,9 @@ export const logger = {
   /**
    * Logs an error message to the console in development mode.
    *
-   * @param {...any[]} messages - The messages to log as an error.
+   * @param {...unknown[]} messages - The messages to log as an error.
    */
-  error: (...messages: any[]) => {
+  error: (...messages: unknown[]) => {
     if (process.env.NODE_ENV === 'development') {
       console.error(...messages)
     }
@@ -27,9 +26,9 @@ export const logger = {
   /**
    * Logs a message to the console in development mode.
    *
-   * @param {...any[]} messages - The messages to log.
+   * @param {...unknown[]} messages - The messages to log.
    */
-  log: (...messages: any[]) => {
+  log: (...messages: unknown[]) => {
     if (process.env.NODE_ENV === 'development') {
       console.log(...messages)
     }
@@ -38,9 +37,9 @@ export const logger = {
   /**
    * Logs a warning message to the console in development mode.
    *
-   * @param {...any[]} messages - The messages to log as a warning.
+   * @param {...unknown[]} messages - The messages to log as a warning.
    */
-  warn: (...messages: any[]) => {
+  warn: (...messages: unknown[]) => {
     if (process.env.NODE_ENV === 'development') {
       console.warn(...messages)
     }

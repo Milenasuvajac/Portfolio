@@ -122,7 +122,7 @@ export default function ThreeScene() {
 
         // Load room model and set up monitor
         useRoomModel(scene, (gltf) => {
-            gltf.scene.traverse((child: any) => {
+            gltf.scene.traverse((child: THREE.Object3D) => {
                 if (child.userData && child.userData.isMonitorSurface) {
                     monitorRef.current = child as THREE.Mesh;
                 }

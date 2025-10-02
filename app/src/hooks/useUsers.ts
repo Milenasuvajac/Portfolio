@@ -7,8 +7,8 @@ interface UseUsersReturn {
   users: UserDTO[]
   loading: boolean
   error: string | null
-  createUser: (userData: Partial<UserDTO>) => Promise<void>
-  updateUser: (userId: number, userData: Partial<UserDTO>) => Promise<void>
+  createUser: (userData: CreateUserBody) => Promise<void>
+  updateUser: (userId: number, userData: Partial<UpdateUserBody>) => Promise<void>
   deleteUser: (userId: number) => Promise<void>
   refreshUsers: () => Promise<void>
 }
@@ -46,14 +46,14 @@ export function useUsers(): UseUsersReturn {
     }
   }, [])
 
-  const createUser = useCallback(async (userData: Partial<UserDTO>) => {
+  const createUser = useCallback(async (userData: CreateUserBody) => {
     setError(null)
     
     try {
       const createData: CreateUserBody = {
         username: userData.username!,
-        password: (userData as any).password!,
-        companyName: userData.companyName || null
+        password: userData.password!,
+        companyName: userData.companyName ?? null
       }
 
       const response = await fetch('/api/users', {
@@ -78,14 +78,14 @@ export function useUsers(): UseUsersReturn {
     }
   }, [])
 
-  const updateUser = useCallback(async (userId: number, userData: Partial<UserDTO>) => {
+  const updateUser = useCallback(async (userId: number, userData: Partial<UpdateUserBody>) => {
     setError(null)
     
     try {
       const updateData: UpdateUserBody = {
         username: userData.username,
         companyName: userData.companyName,
-        ...(userData as any).password && { password: (userData as any).password }
+        ...(userData.password ? { password: userData.password } : {})
       }
 
       const response = await fetch(`/api/users/${userId}`, {
