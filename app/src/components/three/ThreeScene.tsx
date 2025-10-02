@@ -7,14 +7,15 @@ import {useOrbitControls} from "@/hooks/three/useOrbitControls";
 import {useThreeScene} from "@/hooks/three/useThreeScene";
 import {createNightSky} from "@/utils/three/materials/createNightSky"
 import {createSea2} from "@/utils/three/materials/createSea2";
-import { useCss3DIframeOverlay } from "@/hooks/three/useCss3DIframeOverlay";
+import { useCanvasMonitor } from "@/hooks/three/useCanvasMonitor";
+import { useMonitorInteraction } from "@/hooks/three/useMonitorInteraction";
 import ThreeLoadingScreen from "../ui/ThreeLoadingScreen";
 import { animateCameraTo, stepCameraAnimation } from "@/utils/three/animation/cameraAnimation";
 import { calculateMonitorFocusPosition } from "@/utils/three/animation/cameraTargets";
+import styles from "./ThreeScene.module.css";
 
 export default function ThreeScene() {
     const mountRef = useRef<HTMLDivElement>(null);
-    const iframeCleanupRef = useRef<null | (() => void)>(null);
     const [isFocused, setIsFocused] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -37,10 +38,32 @@ export default function ThreeScene() {
         isAnimating: boolean;
     } | null>(null);
 
+    // Provide a way to trigger blur from UI elements outside the effect scope
+    const blurMonitorRef = useRef<() => void>(() => {});
+
+    // Initialize canvas monitor system at top level
+    const canvasMonitor = useCanvasMonitor({
+        width: 512,
+        height: 288,
+        pixelRatio: typeof window !== 'undefined' ? Math.min(window.devicePixelRatio, 2) : 2,
+        iframeUrl: typeof window !== 'undefined' ? `${window.location.origin}/aboutme/public` : "/aboutme/public"
+    });
+
+    // Initialize monitor interaction system at top level
+    const monitorInteraction = useMonitorInteraction({
+        canvasWidth: 512,
+        canvasHeight: 288,
+    });
+
     useEffect(() => {
 
         const { scene, camera, renderer } = useThreeScene(mountRef);
         const controls = useOrbitControls(camera, renderer);
+
+        // Set camera reference for interaction system
+        monitorInteraction.setCamera(camera);
+        // Set camera reference for canvas monitor (used to align iframe overlay to monitor bounds)
+        canvasMonitor.setCamera(camera);
 
         // Helper function: Focus monitor
         const focusMonitor = () => {
@@ -66,20 +89,9 @@ export default function ThreeScene() {
             animateCameraTo(camera, controls, position, target, animationRef);
             focusRef.current = true;
             setIsFocused(true);
-        
-            // Enable iframe interaction (only the iframe should capture events)
-            setIframeInteractive(true);
 
-            // Route mouse events to CSS3D overlay while focused
-            try {
-                renderer.domElement.style.pointerEvents = 'none';
-                cssRenderer.domElement.style.pointerEvents = 'auto';
-                cssRenderer.domElement.style.zIndex = '2';
-                renderer.domElement.style.zIndex = '1';
-            } catch {}
-
-            // Attach key listeners inside iframe so Esc/Space work without mouse click
-            attachIframeKeyListeners();
+            // Enable iframe interaction in focus mode
+            canvasMonitor.setZoomState(true);
         };
 
         // Helper function: Blur monitor (exit focus)
@@ -92,65 +104,15 @@ export default function ThreeScene() {
             animateCameraTo(camera, controls, savedCamRef.current.position, savedCamRef.current.target, animationRef);
             focusRef.current = false;
             setIsFocused(false);
-        
-            // Disable iframe interaction
-            setIframeInteractive(false);
 
-            // Restore mouse events to WebGLRenderer when not focused
-            try {
-                renderer.domElement.style.pointerEvents = 'auto';
-                cssRenderer.domElement.style.pointerEvents = 'none';
-                cssRenderer.domElement.style.zIndex = '';
-                renderer.domElement.style.zIndex = '';
-            } catch {}
-
-            // Detach iframe key listeners if attached
-            if (iframeCleanupRef.current) {
-                try { iframeCleanupRef.current(); } catch {}
-                iframeCleanupRef.current = null;
-            }
+            // Disable iframe interaction in normal mode
+            canvasMonitor.setZoomState(false);
         };
 
-        // Attach/detach key listeners to the iframe content to capture Esc/Space when iframe has focus
-        const attachIframeKeyListeners = () => {
-            const iframe = getIframeElement?.();
-            if (!iframe) return;
-        
-            const onLoad = () => {
-                const win = iframe.contentWindow || undefined;
-                const doc = iframe.contentDocument || undefined;
-                if (!win && !doc) return;
-        
-                const handler = (e: KeyboardEvent) => {
-                    if (e.key === 'Escape') {
-                        e.preventDefault();
-                        if (focusRef.current) blurMonitor();
-                    } else if (e.key === ' ') {
-                        e.preventDefault();
-                        if (focusRef.current) {
-                            blurMonitor();
-                        } else {
-                            focusMonitor();
-                        }
-                    }
-                };
-        
-                try { win?.addEventListener('keydown', handler, { passive: false } as any); } catch {}
-                try { doc?.addEventListener('keydown', handler as any, { passive: false } as any); } catch {}
-        
-                iframeCleanupRef.current = () => {
-                    try { win?.removeEventListener('keydown', handler as any); } catch {}
-                    try { doc?.removeEventListener('keydown', handler as any); } catch {}
-                    try { iframe.removeEventListener('load', onLoad); } catch {}
-                };
-            };
-        
-            if (iframe.contentWindow && iframe.contentDocument && iframe.contentDocument.readyState === 'complete') {
-                onLoad();
-            } else {
-                try { iframe.addEventListener('load', onLoad); } catch {}
-            }
-        };
+        // Expose blur function to UI (e.g., exit button)
+        blurMonitorRef.current = blurMonitor;
+
+
 
         const sea = createSea2();
         scene.add(sea);
@@ -158,27 +120,7 @@ export default function ThreeScene() {
             scene.add(sky);
         });
 
-        // Initialize CSS3D iframe overlay helper
-        const {
-            cssScene,
-            cssRenderer,
-            attachMonitorMesh,
-            updateCss3D,
-            handleResize: handleCssResize,
-            cleanup: cleanupCss3D,
-            setIframeInteractive,
-            getIframeElement
-        } = useCss3DIframeOverlay({
-            mountRef,
-            camera,
-            renderer,
-            controls,
-            url: "/aboutme/public",
-            widthPx: 800,
-            heightPx: 450
-        });
-
-        // Find the monitor mesh and attach the iframe to it
+        // Load room model and set up monitor
         useRoomModel(scene, (gltf) => {
             gltf.scene.traverse((child: any) => {
                 if (child.userData && child.userData.isMonitorSurface) {
@@ -186,9 +128,10 @@ export default function ThreeScene() {
                 }
             });
             if (monitorRef.current) {
-                attachMonitorMesh(monitorRef.current);
+                canvasMonitor.attachToMonitor(monitorRef.current);
+                
+                monitorInteraction.setMonitorMesh(monitorRef.current);
             }
-            // Mark loading as complete when room model is loaded
             setIsLoading(false);
         });
 
@@ -226,10 +169,14 @@ export default function ThreeScene() {
         };
 
         const handleCanvasClick = (event: MouseEvent) => {
-            // Ignore clicks while animating
-            if (animationRef.current?.isAnimating) return;
-            if (focusRef.current || !monitorRef.current) return;
-
+            // Prevent toggling while animation is in progress
+            if (animationRef.current?.isAnimating) {
+                event.preventDefault();
+                return;
+            }
+        
+            if (!monitorRef.current) return;
+        
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -238,7 +185,12 @@ export default function ThreeScene() {
             const intersects = raycaster.intersectObject(monitorRef.current);
 
             if (intersects.length > 0) {
-                focusMonitor();
+                // Clicked on monitor
+                if (focusRef.current) {
+                    canvasMonitor.handleMonitorClick();
+                } else {
+                    focusMonitor();
+                }
             }
         };
 
@@ -257,11 +209,8 @@ export default function ThreeScene() {
                 controls.update();
             }
 
-            // Sync CSS3DObject with monitor
-            updateCss3D();
-
+            // Render the scene
             renderer.render(scene, camera);
-            cssRenderer.render(cssScene, camera);
         };
         animate();
 
@@ -272,7 +221,10 @@ export default function ThreeScene() {
                 renderer.setSize(width, height);
                 camera.aspect = width / height;
                 camera.updateProjectionMatrix();
-                handleCssResize(width, height);
+                // If focused, keep iframe overlay aligned with monitor bounds
+                if (focusRef.current) {
+                    canvasMonitor.updateOverlayBounds();
+                }
             }
         };
         window.addEventListener("resize", handleResize);
@@ -289,14 +241,9 @@ export default function ThreeScene() {
             savedCamRef.current = null;
             monitorRef.current = null;
 
-            cleanupCss3D();
-            // Ensure pointer events restored on unmount
-            try {
-                renderer.domElement.style.pointerEvents = 'auto';
-                cssRenderer.domElement.style.pointerEvents = 'none';
-                cssRenderer.domElement.style.zIndex = '';
-                renderer.domElement.style.zIndex = '';
-            } catch {}
+            // Cleanup canvas monitor and interaction systems
+            canvasMonitor.cleanup();
+            monitorInteraction.cleanup();
 
             // Remove WebGL canvas
             try { mountRef.current?.removeChild(renderer.domElement); } catch {}
@@ -311,33 +258,23 @@ export default function ThreeScene() {
                     minDisplayTime={2500}
                 />
             )}
-            <div ref={mountRef} style={{ width: "100vw", height: "100vh", position: "relative" }}>
-                {/* Instructions overlay */}
-                <div 
-                    style={{
-                        position: "absolute",
-                        top: "20px",
-                        left: "20px",
-                        zIndex: 1000,
-                        backgroundColor: "rgba(0, 0, 0, 0.7)",
-                        color: "white",
-                        padding: "12px 16px",
-                        borderRadius: "8px",
-                        fontFamily: "Arial, sans-serif",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        backdropFilter: "blur(4px)",
-                        border: "1px solid rgba(255, 255, 255, 0.1)",
-                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
-                        userSelect: "none",
-                        pointerEvents: "none",
-                        opacity: isLoading ? 0 : 1,
-                        transition: "opacity 0.5s ease"
-                    }}
+            <div ref={mountRef} className={styles.container}>
+                <div
+                    className={`${styles.helperOverlay} ${isLoading ? styles.helperLoading : (isFocused ? styles.helperFocused : styles.helperVisible)}`}
                 >
-                    {isFocused ? "Press ESC to exit" : "Press SPACE to view my portfolio"}
+                    <div className={styles.helperTitle}>Click monitor or Space to focus; Esc to exit</div>
+                    <div className={styles.helperSubtitle}>Click and drag to look around; scroll to zoom</div>
                 </div>
-                {/* Monitor Focus Mode: Press Space to toggle focus, Esc to exit focus, or click the monitor */}
+                {/* Exit focus button (visible when focused) */}
+                {isFocused && (
+                    <button
+                        onClick={() => blurMonitorRef.current()}
+                        className={styles.exitButton}
+                        aria-label="Exit focus"
+                    >
+                        ✖ Exit
+                    </button>
+                )}
             </div>
         </>
     );

@@ -1082,6 +1082,11 @@ textarea:focus {
   }
 }
 
+/* Global animation classes */
+.dot-pulse {
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+
 @keyframes gridMove {
   0% { transform: translate(0, 0); }
   100% { transform: translate(50px, 50px); }

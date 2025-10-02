@@ -18,7 +18,7 @@ export function animateCameraTo(
   targetPos: THREE.Vector3,
   targetTarget: THREE.Vector3,
   animationRef: MutableRefObject<CameraAnimationState | null>,
-  duration: number = 800
+  duration: number = 1000
 ) {
   if (animationRef.current?.isAnimating) return;
 

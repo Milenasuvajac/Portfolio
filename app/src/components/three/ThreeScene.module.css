@@ -1,0 +1,75 @@
+/* Container for the Three.js canvas mount */
+.container {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+}
+
+/* Helper overlay box (instructions) */
+.helperOverlay {
+  position: absolute;
+  bottom: 24px;
+  left: 70px;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  user-select: none;
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Visibility states */
+.helperVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.helperFocused {
+  opacity: 0;
+  transform: translateY(0);
+}
+
+.helperLoading {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.helperTitle {
+  margin-bottom: 3px;
+  opacity: 0.95;
+}
+
+.helperSubtitle {
+  opacity: 0.8;
+}
+
+/* Exit focus button */
+.exitButton {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 10001; /* above iframe overlay (z-index 10000) */
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: rgba(255, 255, 255, 0.9);
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}

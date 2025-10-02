@@ -9,8 +9,8 @@ export function calculateMonitorFocusPosition(monitorMesh: THREE.Mesh) {
   const forward = new THREE.Vector3(1, 0, 0); // look direction
   const up = new THREE.Vector3(0, 1, 0);      // world up
 
-  const offset = 1.4; // distance in front along forward 
-  const upOffset = 0; // slight up tilt
+  const offset = 1.1; // distance in front along forward
+  const upOffset = 0;
 
   const cameraPos = monitorCenter
     .clone()
