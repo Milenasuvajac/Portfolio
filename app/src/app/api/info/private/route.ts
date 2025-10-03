@@ -3,6 +3,9 @@ import {getCurrentUser} from "@/lib/dal/currentSessionDal";
 import {getPrivateInfos} from "@/lib/dal/infoDal";
 import logger from "@/utils/logger";
 
+// Ensure Node.js runtime for Prisma
+export const runtime = 'nodejs'
+
 export const GET = async (): Promise<NextResponse> => {
     const user = await getCurrentUser();
     if (!user) {
@@ -16,6 +19,7 @@ export const GET = async (): Promise<NextResponse> => {
         return NextResponse.json(items)
     } catch (e) {
         logger.error(e)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        const message = e instanceof Error ? e.message : 'Internal Server Error'
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }

@@ -3,6 +3,9 @@ import { deleteProject, getProjectById, updateProject } from '@/lib/dal/projectD
 import logger from '@/utils/logger'
 import {getCurrentUser, isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
+// Ensure Node.js runtime for Prisma
+export const runtime = 'nodejs'
+
 const isNumericId = (id: string) => /^-?\d+$/.test(id)
 
 export const GET = async (
@@ -25,8 +28,10 @@ export const GET = async (
         const item = await getProjectById(id)
         if (!item) return NextResponse.json({ error: 'Not Found' }, { status: 404 })
         return NextResponse.json(item)
-      } catch {
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+      } catch (e) {
+        logger.error(e)
+        const message = e instanceof Error ? e.message : 'Internal Server Error'
+        return NextResponse.json({ error: message }, { status: 500 })
       }
 }
 
@@ -63,7 +68,8 @@ export const PUT = async (
         return NextResponse.json(updated)
       } catch (e) {
         logger.error(e)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        const message = e instanceof Error ? e.message : 'Internal Server Error'
+        return NextResponse.json({ error: message }, { status: 500 })
       }
 }
 
@@ -86,6 +92,7 @@ export const DELETE = async (
         return NextResponse.json(deleted)
       } catch (e) {
         logger.error(e)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        const message = e instanceof Error ? e.message : 'Internal Server Error'
+        return NextResponse.json({ error: message }, { status: 500 })
       }
 }

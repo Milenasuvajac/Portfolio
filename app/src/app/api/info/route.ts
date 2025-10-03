@@ -3,6 +3,9 @@ import { createInfo, getAllInfos } from '@/lib/dal/infoDal'
 import logger from '@/utils/logger'
 import {isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
+// Ensure Node.js runtime for Prisma
+export const runtime = 'nodejs'
+
 export const GET = async (): Promise<NextResponse> => {
     const isAdmin = await isCurrentUserAdmin()
     if (!isAdmin) {
@@ -17,7 +20,8 @@ export const GET = async (): Promise<NextResponse> => {
     return NextResponse.json(items)
   } catch (e) {
     logger.error(e)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    const message = e instanceof Error ? e.message : 'Internal Server Error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
@@ -42,6 +46,7 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
         return NextResponse.json(created, { status: 201 })
     } catch (e) {
         logger.error(e)
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        const message = e instanceof Error ? e.message : 'Internal Server Error'
+        return NextResponse.json({ error: message }, { status: 500 })
     }
 }

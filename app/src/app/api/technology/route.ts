@@ -3,13 +3,18 @@ import { createTechnology, getAllTechnologies } from '@/lib/dal/technologyDal'
 import logger from '@/utils/logger'
 import {isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
+// Ensure Node.js runtime for Prisma
+export const runtime = 'nodejs'
+
 export const GET = async (): Promise<NextResponse> => {
   try {
     const items = await getAllTechnologies()
     return NextResponse.json(items)
   } catch (e) {
     logger.error(e)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    const message = e instanceof Error ? e.message : 'Internal Server Error'
+    // Surface minimal error message for diagnosis without leaking sensitive data
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 

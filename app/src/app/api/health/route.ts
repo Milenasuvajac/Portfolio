@@ -4,10 +4,23 @@ import prisma from '@/lib/prisma'
 // Force Node runtime for Prisma
 export const runtime = 'nodejs'
 
-export const GET = async (): Promise<NextResponse> => {
+export const GET = async (request: Request): Promise<NextResponse> => {
   try {
     // Minimal query to verify DB connectivity
     const result = await prisma.$queryRaw<any[]>`SELECT version()`
+
+    // Optional deep diagnostics: list public tables
+    const url = new URL(request.url)
+    const deep = url.searchParams.get('deep')
+    let tables: string[] | undefined
+    if (deep) {
+      const rows = await prisma.$queryRaw<any[]>`
+        SELECT table_name
+        FROM information_schema.tables
+        WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+        ORDER BY table_name`
+      tables = Array.isArray(rows) ? rows.map(r => r.table_name) : undefined
+    }
 
     // Redact DATABASE_URL but indicate if present
     const dbUrl = process.env.DATABASE_URL || ''
@@ -20,6 +33,7 @@ export const GET = async (): Promise<NextResponse> => {
       databaseUrlPresent: !!dbUrl,
       databaseUrlRedacted: redactedDbUrl,
       neonVersion: Array.isArray(result) ? result[0]?.version ?? null : null,
+      tables,
     })
   } catch (error: any) {
     return NextResponse.json({
