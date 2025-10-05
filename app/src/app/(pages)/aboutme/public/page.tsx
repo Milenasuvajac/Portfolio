@@ -124,7 +124,7 @@ export default function AboutMePublic() {
             <p>
               Here you can get a first impression of who I am.
               To see my full skills and experience, please{" "}
-              <strong>log in</strong> or <strong>contact me directly</strong>.
+               log in  or  contact me directly .
             </p>
           </div>
           
@@ -150,7 +150,7 @@ export default function AboutMePublic() {
           <section id="cv" className="content-section">
             <h2>CV</h2>
               <div className="info-card">
-                <p><strong>My detailed CV with professional experience and achievements is available only to registered users.</strong></p>
+                <p>My detailed CV with professional experience and achievements is available only to registered users.</p>
               </div>
           </section>
 
@@ -168,14 +168,13 @@ export default function AboutMePublic() {
                       )}
                     <div className="tech-info">
                       <h3>{tech.name}</h3>
-                      <p className="tech-description">{tech.description}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
               <div className="info-card">
-                <p><strong>Information about technologies, frameworks, and tools I work with professionally.</strong></p>
+                <p>Information about technologies, frameworks, and tools I work with professionally.</p>
               </div>
             )}
           </section>
@@ -184,7 +183,7 @@ export default function AboutMePublic() {
           <section id="experience" className="content-section">
             <h2>Work experience</h2>
               <div className="info-card">
-                <p><strong>Detailed information about my work experience, roles, and professional achievements is available only to registered users.</strong></p>
+                <p>Detailed information about my work experience, roles, and professional achievements is available only to registered users.</p>
               </div>
           </section>
 
@@ -192,7 +191,7 @@ export default function AboutMePublic() {
           <section id="documents" className="content-section">
             <h2>Documents</h2>
               <div className="info-card">
-                <p><strong>Important documents, certificates, and credentials related to my professional career are available only to authorized users.</strong></p>
+                <p><>Important documents, certificates, and credentials related to my professional career are available only to authorized users.</></p>
               </div>
           </section>
 
@@ -200,7 +199,7 @@ export default function AboutMePublic() {
           <section id="projects" className="content-section">
             <h2>My projects</h2>
               <div className="info-card">
-                <p><strong>Detailed showcase of my personal and professional projects that demonstrate my skills and creativity is available only to registered users.</strong></p>
+                <p> Detailed showcase of my personal and professional projects that demonstrate my skills and creativity is available only to registered users. </p>
               </div>
           </section>
 

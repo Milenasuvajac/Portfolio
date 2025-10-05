@@ -145,7 +145,6 @@ export default function AboutMePrivate() {
                       )}
                       <div className="tech-info">
                         <h4>{tech.name}</h4>
-                        <p className="tech-description">{tech.description}</p>
                       </div>
                     </div>
                   ))}
@@ -202,18 +201,18 @@ export default function AboutMePrivate() {
                   <div className="document-item">
                     <h3>{document.name}</h3>
                     <div className="document-details">
-                      <p><strong>Year:</strong> {document.year}</p>
-                      <p><strong>Issuer:</strong> {document.issuer}</p>
-                      <p><strong>Language:</strong> {document.language}</p>
+                      <p> Year:  {document.year}</p>
+                      <p> Issuer:  {document.issuer}</p>
+                      <p> Language:  {document.language}</p>
                       {document.comment && (
-                        <p><strong>Comment:</strong> {document.comment}</p>
+                        <p> Comment:  {document.comment}</p>
                       )}
                       {document.document.startsWith('http') ? (
                         <a href={document.document} target="_blank" rel="noopener noreferrer" className="cv-link">
                           📄 View Document
                         </a>
                       ) : (
-                        <p><strong>Document:</strong> {document.document}</p>
+                        <p> Document:  {document.document}</p>
                       )}
                     </div>
                   </div>
