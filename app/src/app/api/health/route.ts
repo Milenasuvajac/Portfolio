@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
+import {isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
 // Force Node runtime for Prisma
 export const runtime = 'nodejs'
 
 export const GET = async (request: Request): Promise<NextResponse> => {
+
+    const isAdmin = await isCurrentUserAdmin()
+    if (!isAdmin) {
+        return new NextResponse('Forbidden', {
+            headers: { 'Content-Type': 'text/plain' },
+            status: 403,
+        })
+    }
+
   try {
     // Minimal query to verify DB connectivity
     const result = await prisma.$queryRaw<any[]>`SELECT version()`

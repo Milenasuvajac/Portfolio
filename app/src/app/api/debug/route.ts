@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import logger from '@/utils/logger'
+import {isCurrentUserAdmin} from "@/lib/dal/currentSessionDal";
 
 // Force Node runtime for Prisma
 export const runtime = 'nodejs'
@@ -24,6 +25,15 @@ const convertBigIntToNumber = (obj: any): any => {
 }
 
 export const GET = async (): Promise<NextResponse> => {
+
+    const isAdmin = await isCurrentUserAdmin()
+    if (!isAdmin) {
+        return new NextResponse('Forbidden', {
+            headers: { 'Content-Type': 'text/plain' },
+            status: 403,
+        })
+    }
+
     try {
         logger.log('Debug endpoint: Starting database tests')
         
