@@ -3,9 +3,11 @@
 import React, { useState } from 'react'
 import {login} from "@/actions/login";
 import logger from "@/utils/logger";
+import { useRouter } from 'next/navigation';
 import '../../styles.css'
 
 const Login = () => {
+    const router = useRouter()
     const [username, setusername] = useState<string>('')
     const [password, setPassword] = useState<string>('')
     const [error, setError] = useState<string>('')
@@ -42,6 +44,13 @@ const Login = () => {
 
     return (
         <main>
+            <button 
+                className="back-button" 
+                onClick={() => router.back()}
+                aria-label="Go back"
+            >
+                ←
+            </button>
             <div className='login-container'>
                 <form className="login-form" onSubmit={handleSubmit}>
                     <h2>Login</h2>
