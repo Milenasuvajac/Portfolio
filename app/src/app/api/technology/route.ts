@@ -9,9 +9,16 @@ export const runtime = 'nodejs'
 export const GET = async (): Promise<NextResponse> => {
   try {
     const items = await getAllTechnologies()
+    
+    // Add debugging for production
+    logger.log(`Technology API: Found ${items?.length || 0} items`)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Technology items:', items)
+    }
+    
     return NextResponse.json(items)
   } catch (e) {
-    logger.error(e)
+    logger.error('Technology API Error:', e)
     const message = e instanceof Error ? e.message : 'Internal Server Error'
     // Surface minimal error message for diagnosis without leaking sensitive data
     return NextResponse.json({ error: message }, { status: 500 })

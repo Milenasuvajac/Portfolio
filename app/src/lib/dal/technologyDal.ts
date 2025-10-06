@@ -17,14 +17,24 @@ export const createTechnology = async (
 }
 
 export const getAllTechnologies = async () => {
-  return prisma.technology.findMany({
-    select: {
-      TID: true,
-      icon: true,
-      name: true,
-      description: true,
-    },
-  })
+  try {
+    logger.log('getAllTechnologies: Starting query')
+    
+    const result = await prisma.technology.findMany({
+      select: {
+        TID: true,
+        icon: true,
+        name: true,
+        description: true,
+      },
+    })
+    
+    logger.log(`getAllTechnologies: Query completed, found ${result?.length || 0} items`)
+    return result
+  } catch (error) {
+    logger.error('getAllTechnologies: Query failed', error)
+    throw error
+  }
 }
 
 export const getTechnologyById = async (id: string) => {

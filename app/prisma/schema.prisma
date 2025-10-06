@@ -59,7 +59,7 @@ model Info {
 }
 
 model Document {
-  DID        Int    @id @default(autoincrement())
+  did        Int    @id @default(autoincrement())
   name       String
   year       Int
   document   String

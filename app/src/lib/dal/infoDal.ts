@@ -38,19 +38,27 @@ export const getAllInfos = async () => {
 }
 
 export const getPublicInfos = async () => {
-    return prisma.info.findMany({
-        where: {
-            visibility: true,
-        },
-        select: {
-            IID: true,
-            photo: true,
-            text: true,
-            visibility: true,
-            contact: true,
-            cv: true,
-        },
-    })
+    try {
+        logger.log('getPublicInfos: Starting query for public info items')
+        const items = await prisma.info.findMany({
+            where: {
+                visibility: true,
+            },
+            select: {
+                IID: true,
+                photo: true,
+                text: true,
+                visibility: true,
+                contact: true,
+                cv: true,
+            },
+        })
+        logger.log(`getPublicInfos: Query completed, found ${items?.length || 0} items`)
+        return items
+    } catch (error) {
+        logger.error('getPublicInfos: Error during query:', error)
+        throw error
+    }
 }
 
 export const getPrivateInfos = async () => {
