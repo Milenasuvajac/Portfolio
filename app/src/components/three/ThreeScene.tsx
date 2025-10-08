@@ -175,6 +175,11 @@ export default function ThreeScene() {
         const mouse = new THREE.Vector2();
 
 
+        // Helper function to detect if device is mobile/touch
+        const isMobileDevice = () => {
+            return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        };
+
         // Input event handlers
         const handleKeyDown = (event: KeyboardEvent) => {
             // Prevent toggling while animation is in progress
@@ -223,30 +228,34 @@ export default function ThreeScene() {
                 }
             }
 
-            // Click pulse on interactive objects
-            const interactiveObjects = animatorRef.current.getObjects();
-            if (interactiveObjects.length > 0) {
-                const ixs = raycaster.intersectObjects(interactiveObjects, true);
-                if (ixs.length > 0) {
-                    // Find the interactive ancestor
-                    const getAncestor = (obj: THREE.Object3D): THREE.Object3D => {
-                        let cur: THREE.Object3D | null = obj;
-                        while (cur) {
-                            if (animatorRef.current.hasObject(cur)) return cur;
-                            cur = cur.parent;
-                        }
-                        return obj;
-                    };
-                    const target = getAncestor(ixs[0].object);
-                    
-                    // Trigger pulse animation
-                    animatorRef.current.setPulseState(target);
-                    
-                    setTimeout(() => {
-                        const isStillHovered = hoveredRef.current === target;
-                        animatorRef.current.setHoverState(target, isStillHovered);
-                    }, 200);
-                    // Do not return; allow monitor click focus if applicable below
+            // Click pulse on interactive objects (only when not in focus mode)
+            if (!focusRef.current) {
+                const interactiveObjects = animatorRef.current.getObjects();
+                if (interactiveObjects.length > 0) {
+                    const ixs = raycaster.intersectObjects(interactiveObjects, true);
+                    if (ixs.length > 0) {
+                        // Find the interactive ancestor
+                        const getAncestor = (obj: THREE.Object3D): THREE.Object3D => {
+                            let cur: THREE.Object3D | null = obj;
+                            while (cur) {
+                                if (animatorRef.current.hasObject(cur)) return cur;
+                                cur = cur.parent;
+                            }
+                            return obj;
+                        };
+                        const target = getAncestor(ixs[0].object);
+                        
+                        // Trigger pulse animation
+                        animatorRef.current.setPulseState(target);
+                        
+                        setTimeout(() => {
+                            // On mobile devices, always reset to normal state after pulse
+                            // On desktop, check if still hovered
+                            const isStillHovered = isMobileDevice() ? false : hoveredRef.current === target;
+                            animatorRef.current.setHoverState(target, isStillHovered);
+                        }, 200);
+                        // Do not return; allow monitor click focus if applicable below
+                    }
                 }
             }
 
@@ -267,6 +276,17 @@ export default function ThreeScene() {
         // Hover handler to scale interactive objects (use target scales + smoothing in animate)
         const handleCanvasMouseMove = (event: MouseEvent) => {
             if (!renderer) return;
+            
+            // Don't apply hover effects when camera is in focus mode (zoomed on monitor)
+            if (focusRef.current) {
+                // Reset any existing hover state when in focus mode
+                if (hoveredRef.current) {
+                    animatorRef.current.setHoverState(hoveredRef.current, false);
+                    hoveredRef.current = null;
+                }
+                return;
+            }
+            
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -300,10 +320,41 @@ export default function ThreeScene() {
             }
         };
 
+        // Touch event handlers for mobile devices
+        const handleTouchStart = (event: TouchEvent) => {
+            // Prevent default to avoid triggering mouse events
+            event.preventDefault();
+            
+            if (event.touches.length === 1) {
+                const touch = event.touches[0];
+                // Convert touch to mouse event format for consistency
+                const mouseEvent = new MouseEvent('click', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY,
+                    bubbles: true,
+                    cancelable: true
+                });
+                handleCanvasClick(mouseEvent);
+            }
+        };
+
+        const handleTouchMove = () => {
+            // On mobile, we don't want hover effects during touch move
+            // Reset any hovered object
+            if (hoveredRef.current) {
+                animatorRef.current.setHoverState(hoveredRef.current, false);
+                hoveredRef.current = null;
+            }
+        };
+
         // Add event listeners
         document.addEventListener('keydown', handleKeyDown);
         renderer.domElement.addEventListener('click', handleCanvasClick);
         renderer.domElement.addEventListener('mousemove', handleCanvasMouseMove);
+        
+        // Add touch event listeners for mobile support
+        renderer.domElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+        renderer.domElement.addEventListener('touchmove', handleTouchMove, { passive: true });
 
         const animate = () => {
             requestAnimationFrame(animate);
@@ -344,6 +395,8 @@ export default function ThreeScene() {
             document.removeEventListener('keydown', handleKeyDown);
             renderer.domElement.removeEventListener('click', handleCanvasClick);
             renderer.domElement.removeEventListener('mousemove', handleCanvasMouseMove);
+            renderer.domElement.removeEventListener('touchstart', handleTouchStart);
+            renderer.domElement.removeEventListener('touchmove', handleTouchMove);
             window.removeEventListener("resize", handleResize);
 
             // Reset focus state

@@ -46,7 +46,6 @@ export class InteractiveObjectAnimator {
     }
 
     addObject(object: THREE.Object3D): void {
-        console.log('Adding object to animator:', object.name);
         this.objects.set(object, {
             originalScale: object.scale.clone(),
             originalPosition: object.position.clone(),
@@ -132,7 +131,6 @@ export class InteractiveObjectAnimator {
                     this.config.chairSmoothingFactor
                 );
                 object.position.lerp(state.targetPosition, this.config.chairSmoothingFactor);
-                console.log('Updating Chair_Top position to:', object.position.x, 'target:', state.targetPosition.x);
             } else if (isChair) {
                 // Chair Legs: rotation and position (slow)
                 object.rotation.y = THREE.MathUtils.lerp(
@@ -184,10 +182,6 @@ export class InteractiveObjectAnimator {
     private setChairGroupState(chairObject: THREE.Object3D, isHovered: boolean, isPulse: boolean = false): void {
         const chairParts = this.findChairParts(chairObject);
         
-        // Debug: Log which chair parts are found
-        console.log('Chair parts found:', chairParts.map(p => p.name));
-        console.log('Triggered by:', chairObject.name, 'isHovered:', isHovered, 'isPulse:', isPulse);
-        
         for (const part of chairParts) {
             const state = this.objects.get(part);
             if (!state) {
@@ -195,8 +189,6 @@ export class InteractiveObjectAnimator {
                 continue;
             }
 
-            console.log('Animating part:', part.name);
-            
             if (isHovered || isPulse) {
                 state.targetScale = 1.0;
                 state.targetPosition = state.originalPosition.clone();
@@ -208,14 +200,12 @@ export class InteractiveObjectAnimator {
                         this.config.rotationSpeed * 1.5 : 
                         this.config.rotationSpeed;
                     state.targetPosition.x = state.originalPosition.x + this.config.chairXOffset;
-                    console.log('Chair_Top - rotating and moving in X from', state.originalPosition.x, 'to:', state.targetPosition.x);
                 } else {
                     // Chair_Legs: rotation + X offset
                     state.targetRotation.y += isPulse ? 
                         this.config.rotationSpeed * 1.5 : 
                         this.config.rotationSpeed;
                     state.targetPosition.x = state.originalPosition.x + this.config.chairXOffset;
-                    console.log('Chair_Legs - rotating and moving in X from', state.originalPosition.x, 'to:', state.targetPosition.x);
                 }
             } else {
                 // Reset to original state
