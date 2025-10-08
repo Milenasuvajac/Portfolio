@@ -210,6 +210,23 @@ export default function ThreeScene() {
                 return;
             }
 
+            // When in focus mode, only allow monitor clicks for iframe interaction
+            if (focusRef.current) {
+                if (!renderer || !monitorRef.current) return;
+                
+                const rect = renderer.domElement.getBoundingClientRect();
+                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObject(monitorRef.current);
+                
+                if (intersects.length > 0) {
+                    canvasMonitor.handleMonitorClick();
+                }
+                return;
+            }
+
             // Compute mouse position for raycasting
             if (!renderer) return;
 
@@ -322,6 +339,13 @@ export default function ThreeScene() {
 
         // Touch event handlers for mobile devices
         const handleTouchStart = (event: TouchEvent) => {
+            // Disable all touch interactions when iframe is in focus mode
+            if (focusRef.current) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+            
             // Prevent default to avoid triggering mouse events
             event.preventDefault();
             
@@ -338,7 +362,14 @@ export default function ThreeScene() {
             }
         };
 
-        const handleTouchMove = () => {
+        const handleTouchMove = (event: TouchEvent) => {
+            // Disable all touch move when iframe is in focus mode
+            if (focusRef.current) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+            
             // On mobile, we don't want hover effects during touch move
             // Reset any hovered object
             if (hoveredRef.current) {
@@ -347,10 +378,19 @@ export default function ThreeScene() {
             }
         };
 
+        // Wheel event handler to prevent zoom when iframe is in focus
+        const handleWheel = (event: WheelEvent) => {
+            if (focusRef.current) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        };
+
         // Add event listeners
         document.addEventListener('keydown', handleKeyDown);
         renderer.domElement.addEventListener('click', handleCanvasClick);
         renderer.domElement.addEventListener('mousemove', handleCanvasMouseMove);
+        renderer.domElement.addEventListener('wheel', handleWheel, { passive: false });
         
         // Add touch event listeners for mobile support
         renderer.domElement.addEventListener('touchstart', handleTouchStart, { passive: false });
@@ -395,6 +435,7 @@ export default function ThreeScene() {
             document.removeEventListener('keydown', handleKeyDown);
             renderer.domElement.removeEventListener('click', handleCanvasClick);
             renderer.domElement.removeEventListener('mousemove', handleCanvasMouseMove);
+            renderer.domElement.removeEventListener('wheel', handleWheel);
             renderer.domElement.removeEventListener('touchstart', handleTouchStart);
             renderer.domElement.removeEventListener('touchmove', handleTouchMove);
             window.removeEventListener("resize", handleResize);

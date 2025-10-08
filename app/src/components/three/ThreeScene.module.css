@@ -1,8 +1,9 @@
 /* Container for the Three.js canvas mount */
 .container {
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   position: relative;
+  overscroll-behavior: contain;
 }
 
 /* Helper overlay box (instructions) */

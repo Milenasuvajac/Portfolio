@@ -53,6 +53,7 @@ export function useCanvasMonitor(options: CanvasMonitorOptions = {}) {
          opacity: 0;
          transition: opacity 0.5s ease-in-out;
          box-shadow: 0 0 30px rgba(74, 158, 255, 0.3);
+         overscroll-behavior: contain;
      `;
 
     // Allow same-origin access for navigation
@@ -182,6 +183,16 @@ export function useCanvasMonitor(options: CanvasMonitorOptions = {}) {
   // Initialize iframe and start rendering (no texture/material assignment)
   const initializeMonitor = useCallback(() => {
     createIframe();
+    
+    // Enable VirtualKeyboard API for Android Chrome to prevent viewport jumping
+    if (typeof navigator !== 'undefined' && 'virtualKeyboard' in navigator) {
+      try {
+        (navigator as any).virtualKeyboard.overlaysContent = true;
+      } catch (error) {
+        logger.warn('VirtualKeyboard API not supported:', error);
+      }
+    }
+    
     // Start rendering after a short delay to allow iframe to load
     setTimeout(() => {
       startRendering();
