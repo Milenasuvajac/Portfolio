@@ -15,12 +15,24 @@ import type { CameraAnimationState } from "@/utils/three/animation/cameraAnimati
 import { calculateMonitorFocusPosition } from "@/utils/three/animation/cameraTargets";
 import { InteractiveObjectAnimator } from "@/utils/three/animation/interactiveAnimations";
 import styles from "./ThreeScene.module.css";
+import { focusMonitor } from "@/utils/three/interactions/focusMonitor";
+import { blurMonitor } from "@/utils/three/interactions/blurMonitor";
+import { handleKeyDown } from "@/utils/three/interactions/handleKeyDown";
+import { handleCanvasClick } from "@/utils/three/interactions/handleCanvasClick";
+import { handleCanvasMouseMove } from "@/utils/three/interactions/handleCanvasMouseMove";
+import { handleTouchStart } from "@/utils/three/interactions/handleTouchStart";
+import { handleTouchMove } from "@/utils/three/interactions/handleTouchMove";
+import type { InteractionDeps } from "@/utils/three/interactions/types";
 
 export default function ThreeScene() {
     const mountRef = useRef<HTMLDivElement>(null);
     const [isFocused, setIsFocused] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
+    // On-screen hint to indicate the monitor is clickable
+    // Start hidden; show after the intro zoom completes
+    const [showMonitorHint, setShowMonitorHint] = useState(false);
+    const [monitorHintPos, setMonitorHintPos] = useState<{ left: number; top: number } | null>(null);
 
     // Focus mode state management
     const monitorRef = useRef<THREE.Mesh | null>(null);
@@ -37,9 +49,13 @@ export default function ThreeScene() {
         controlsEnabled: boolean;
     } | null>(null);
     const animationRef = useRef<CameraAnimationState | null>(null);
+    // Track whether the initial intro zoom has been triggered
+    const introZoomDoneRef = useRef<boolean>(false);
 
     // Provide a way to trigger blur from UI elements outside the effect scope
     const blurMonitorRef = useRef<() => void>(() => {});
+    // Provide a way to trigger focus from UI elements (monitor hint)
+    const focusMonitorRef = useRef<() => void>(() => {});
 
     // Initialize canvas monitor system at top level
     const canvasMonitor = useCanvasMonitor({
@@ -73,57 +89,27 @@ export default function ThreeScene() {
         // Set camera reference for canvas monitor (used to align iframe overlay to monitor bounds)
         canvasMonitor.setCamera(camera);
 
-        // Helper function: Focus monitor
-        const focusMonitor = () => {
-            // Block re-entry while animating
-            if (animationRef.current?.isAnimating) return;
-            if (!monitorRef.current || focusRef.current) return;
-        
-            // Save current camera state
-            savedCamRef.current = {
-                position: camera.position.clone(),
-                target: controls.target.clone(),
-                up: camera.up.clone(),
-                controlsEnabled: controls.enabled
-            };
-        
-            // Calculate focus position
-            const { position, target, up } = calculateMonitorFocusPosition(monitorRef.current);
-
-            // Start animation with smoother easing and faster duration
-            animateCameraTo(camera, controls, position, target, animationRef, 900, up);
-            focusRef.current = true;
-            setIsFocused(true);
-
-            // Enable iframe interaction in focus mode
-            canvasMonitor.setZoomState(true);
-        };
-
-        // Helper function: Blur monitor (exit focus)
-        const blurMonitor = () => {
-            // Block re-entry while animating
-            if (animationRef.current?.isAnimating) return;
-            if (!focusRef.current || !savedCamRef.current) return;
-        
-            // Start animation back to saved position
-            animateCameraTo(
-                camera,
-                controls,
-                savedCamRef.current.position,
-                savedCamRef.current.target,
-                animationRef,
-                900,
-                savedCamRef.current.up
-            );
-            focusRef.current = false;
-            setIsFocused(false);
-
-            // Disable iframe interaction in normal mode
-            canvasMonitor.setZoomState(false);
+        // Assemble shared dependencies for handlers
+        const deps: InteractionDeps = {
+            camera,
+            controls,
+            renderer,
+            monitorRef,
+            gitHubRef,
+            animatorRef,
+            hoveredRef,
+            focusRef,
+            savedCamRef,
+            animationRef,
+            canvasMonitor,
+            setIsFocused,
+            setShowMonitorHint,
         };
 
         // Expose blur function to UI (e.g., exit button)
-        blurMonitorRef.current = blurMonitor;
+        blurMonitorRef.current = () => blurMonitor(deps);
+        // Expose focus function to UI (e.g., monitor hint CTA)
+        focusMonitorRef.current = () => focusMonitor(deps);
 
 
 
@@ -170,8 +156,59 @@ export default function ThreeScene() {
                 canvasMonitor.attachToMonitor(monitorRef.current);
                 
                 monitorInteraction.setMonitorMesh(monitorRef.current);
+                // Compute a screen-space position for hint (top-center of monitor bounds)
+                try {
+                    const box = new THREE.Box3().setFromObject(monitorRef.current);
+                    const topCenter = new THREE.Vector3(
+                        (box.min.x + box.max.x) / 2,
+                        box.max.y,
+                        (box.min.z + box.max.z) / 2
+                    );
+                    // Offset the hint in world space: move along Y (up) and Z (forward)
+                    // Increase offsets to move the hint further up and right on screen
+                    const hintWorldOffset = new THREE.Vector3(0, 0.35, 0.35);
+                    topCenter.add(hintWorldOffset);
+                    const projected = topCenter.clone().project(camera);
+                    const x = (projected.x + 1) / 2 * window.innerWidth;
+                    const y = (1 - projected.y) / 2 * window.innerHeight;
+                    setMonitorHintPos({ left: Math.round(x + 70), top: Math.round(y - 100) });
+                } catch {}
             }
             setIsLoading(false);
+
+            // After the scene/model is loaded, perform a gentle intro zoom
+            // to the requested camera position. This runs only once on mount.
+            try {
+                if (!introZoomDoneRef.current) {
+                    introZoomDoneRef.current = true;
+                    const targetPos = new THREE.Vector3(
+                        6.496919875240896,
+                        6.355091969590323,
+                        4.066273028680081
+                    );
+                    // so the camera looks straight (horizontal) along the XZ plane
+                    const targetLook = new THREE.Vector3(
+                        5.000000000011038,
+                        5.436673874558975,
+                        2.95831904089331
+                    );
+                    // Slow, smooth zoom-in over ~2.6s
+                    animateCameraTo(
+                        camera,
+                        controls,
+                        targetPos,
+                        targetLook,
+                        animationRef,
+                        2600,
+                        new THREE.Vector3(0, 1, 0)
+                    );
+                    // Show monitor hint after intro zoom finishes
+                    setTimeout(() => {
+                        // Only show if not already focused
+                        if (!focusRef.current) setShowMonitorHint(true);
+                    }, 2650);
+                }
+            } catch {}
         });
 
         const dirLight = new THREE.DirectionalLight(0xffffff, 2.5);
@@ -179,213 +216,12 @@ export default function ThreeScene() {
         dirLight.castShadow = true;
         scene.add(dirLight);
 
-        // Raycaster for monitor click detection
-        const raycaster = new THREE.Raycaster();
-        const mouse = new THREE.Vector2();
-
-
-        // Helper function to detect if device is mobile/touch (for interaction logic)
-        const isMobileDevice = () => {
-            return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        };
-
-        // Input event handlers
-        const handleKeyDown = (event: KeyboardEvent) => {
-            // Prevent toggling while animation is in progress
-            if (animationRef.current?.isAnimating) {
-                event.preventDefault();
-                return;
-            }
-        
-            if (event.key === ' ') { // Space key
-                event.preventDefault();
-                if (focusRef.current) {
-                    blurMonitor();
-                } else {
-                    focusMonitor();
-                }
-            } else if (event.key === 'Escape') {
-                event.preventDefault();
-                if (focusRef.current) {
-                    blurMonitor();
-                }
-            }
-        };
-
-        const handleCanvasClick = (event: MouseEvent) => {
-            // Prevent toggling while animation is in progress
-            if (animationRef.current?.isAnimating) {
-                event.preventDefault();
-                return;
-            }
-
-            // When in focus mode, only allow monitor clicks for iframe interaction
-            if (focusRef.current) {
-                if (!renderer || !monitorRef.current) return;
-                
-                const rect = renderer.domElement.getBoundingClientRect();
-                mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-                mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-                
-                raycaster.setFromCamera(mouse, camera);
-                const intersects = raycaster.intersectObject(monitorRef.current);
-                
-                if (intersects.length > 0) {
-                    canvasMonitor.handleMonitorClick();
-                }
-                return;
-            }
-
-            // Compute mouse position for raycasting
-            if (!renderer) return;
-
-            const rect = renderer.domElement.getBoundingClientRect();
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            // First, check if the GitHub icon was clicked
-            if (gitHubRef.current) {
-                const ghIntersects = raycaster.intersectObject(gitHubRef.current, true);
-                if (ghIntersects.length > 0) {
-                    // Open GitHub portfolio in a new tab
-                    window.open('https://github.com/Milenasuvajac/Portfolio', '_blank');
-                    return;
-                }
-            }
-
-            // Click pulse on interactive objects (only when not in focus mode)
-            if (!focusRef.current) {
-                const interactiveObjects = animatorRef.current.getObjects();
-                if (interactiveObjects.length > 0) {
-                    const ixs = raycaster.intersectObjects(interactiveObjects, true);
-                    if (ixs.length > 0) {
-                        // Find the interactive ancestor
-                        const getAncestor = (obj: THREE.Object3D): THREE.Object3D => {
-                            let cur: THREE.Object3D | null = obj;
-                            while (cur) {
-                                if (animatorRef.current.hasObject(cur)) return cur;
-                                cur = cur.parent;
-                            }
-                            return obj;
-                        };
-                        const target = getAncestor(ixs[0].object);
-                        
-                        // Trigger pulse animation
-                        animatorRef.current.setPulseState(target);
-                        
-                        setTimeout(() => {
-                            // On mobile devices, always reset to normal state after pulse
-                            // On desktop, check if still hovered
-                            const isStillHovered = isMobileDevice() ? false : hoveredRef.current === target;
-                            animatorRef.current.setHoverState(target, isStillHovered);
-                        }, 200);
-                        // Do not return; allow monitor click focus if applicable below
-                    }
-                }
-            }
-
-            // If not on GitHub icon, check monitor for focus/interaction
-            if (!monitorRef.current) return;
-            const intersects = raycaster.intersectObject(monitorRef.current);
-
-            if (intersects.length > 0) {
-                // Clicked on monitor
-                if (focusRef.current) {
-                    canvasMonitor.handleMonitorClick();
-                } else {
-                    focusMonitor();
-                }
-            }
-        };
-
-        // Hover handler to scale interactive objects (use target scales + smoothing in animate)
-        const handleCanvasMouseMove = (event: MouseEvent) => {
-            if (!renderer) return;
-            
-            // Don't apply hover effects when camera is in focus mode (zoomed on monitor)
-            if (focusRef.current) {
-                // Reset any existing hover state when in focus mode
-                if (hoveredRef.current) {
-                    animatorRef.current.setHoverState(hoveredRef.current, false);
-                    hoveredRef.current = null;
-                }
-                return;
-            }
-            
-            const rect = renderer.domElement.getBoundingClientRect();
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-            raycaster.setFromCamera(mouse, camera);
-            // Reset previous hovered object
-            if (hoveredRef.current) {
-                animatorRef.current.setHoverState(hoveredRef.current, false);
-                hoveredRef.current = null;
-            }
-
-            const interactiveObjects = animatorRef.current.getObjects();
-            if (interactiveObjects.length > 0) {
-                const intersects = raycaster.intersectObjects(interactiveObjects, true);
-                if (intersects.length > 0) {
-                    // Find interactive ancestor
-                    const getAncestor = (obj: THREE.Object3D): THREE.Object3D => {
-                        let cur: THREE.Object3D | null = obj;
-                        while (cur) {
-                            if (animatorRef.current.hasObject(cur)) return cur;
-                            cur = cur.parent;
-                        }
-                        return obj;
-                    };
-                    const target = getAncestor(intersects[0].object);
-                    
-                    // Set hover state
-                    animatorRef.current.setHoverState(target, true);
-                    hoveredRef.current = target;
-                }
-            }
-        };
-
-        // Touch event handlers for mobile devices
-        const handleTouchStart = (event: TouchEvent) => {
-            // Disable all touch interactions when iframe is in focus mode
-            if (focusRef.current) {
-                event.preventDefault();
-                event.stopPropagation();
-                return;
-            }
-            
-            // Prevent default to avoid triggering mouse events
-            event.preventDefault();
-            
-            if (event.touches.length === 1) {
-                const touch = event.touches[0];
-                // Convert touch to mouse event format for consistency
-                const mouseEvent = new MouseEvent('click', {
-                    clientX: touch.clientX,
-                    clientY: touch.clientY,
-                    bubbles: true,
-                    cancelable: true
-                });
-                handleCanvasClick(mouseEvent);
-            }
-        };
-
-        const handleTouchMove = (event: TouchEvent) => {
-            // Disable all touch move when iframe is in focus mode
-            if (focusRef.current) {
-                event.preventDefault();
-                event.stopPropagation();
-                return;
-            }
-            
-            // On mobile, we don't want hover effects during touch move
-            // Reset any hovered object
-            if (hoveredRef.current) {
-                animatorRef.current.setHoverState(hoveredRef.current, false);
-                hoveredRef.current = null;
-            }
-        };
+        // Stable handler references (delegating to external modules)
+        const onKeyDown = (event: KeyboardEvent) => handleKeyDown(event, deps);
+        const onCanvasClick = (event: MouseEvent) => handleCanvasClick(event, deps);
+        const onCanvasMouseMove = (event: MouseEvent) => handleCanvasMouseMove(event, deps);
+        const onTouchStart = (event: TouchEvent) => handleTouchStart(event, deps);
+        const onTouchMove = (event: TouchEvent) => handleTouchMove(event, deps);
 
         // Wheel event handler to prevent zoom when iframe is in focus
         const handleWheel = (event: WheelEvent) => {
@@ -396,14 +232,14 @@ export default function ThreeScene() {
         };
 
         // Add event listeners
-        document.addEventListener('keydown', handleKeyDown);
-        renderer.domElement.addEventListener('click', handleCanvasClick);
-        renderer.domElement.addEventListener('mousemove', handleCanvasMouseMove);
+        document.addEventListener('keydown', onKeyDown);
+        renderer.domElement.addEventListener('click', onCanvasClick);
+        renderer.domElement.addEventListener('mousemove', onCanvasMouseMove);
         renderer.domElement.addEventListener('wheel', handleWheel, { passive: false });
         
         // Add touch event listeners for mobile support
-        renderer.domElement.addEventListener('touchstart', handleTouchStart, { passive: false });
-        renderer.domElement.addEventListener('touchmove', handleTouchMove, { passive: true });
+        renderer.domElement.addEventListener('touchstart', onTouchStart, { passive: false });
+        renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: true });
 
         const animate = () => {
             requestAnimationFrame(animate);
@@ -421,6 +257,9 @@ export default function ThreeScene() {
 
             // Render the scene
             renderer.render(scene, camera);
+
+            console.log("Camera: ", camera.position)
+            console.log("target: ", controls.target);
         };
         animate();
 
@@ -431,6 +270,7 @@ export default function ThreeScene() {
                 renderer.setSize(width, height);
                 camera.aspect = width / height;
                 camera.updateProjectionMatrix();
+
                 // If focused, keep iframe overlay aligned with monitor bounds
                 if (focusRef.current) {
                     canvasMonitor.updateOverlayBounds();
@@ -441,12 +281,12 @@ export default function ThreeScene() {
 
         return () => {
             // Clean up event listeners
-            document.removeEventListener('keydown', handleKeyDown);
-            renderer.domElement.removeEventListener('click', handleCanvasClick);
-            renderer.domElement.removeEventListener('mousemove', handleCanvasMouseMove);
+            document.removeEventListener('keydown', onKeyDown);
+            renderer.domElement.removeEventListener('click', onCanvasClick);
+            renderer.domElement.removeEventListener('mousemove', onCanvasMouseMove);
             renderer.domElement.removeEventListener('wheel', handleWheel);
-            renderer.domElement.removeEventListener('touchstart', handleTouchStart);
-            renderer.domElement.removeEventListener('touchmove', handleTouchMove);
+            renderer.domElement.removeEventListener('touchstart', onTouchStart);
+            renderer.domElement.removeEventListener('touchmove', onTouchMove);
             window.removeEventListener("resize", handleResize);
 
             // Reset focus state
@@ -463,6 +303,13 @@ export default function ThreeScene() {
             try { mountRef.current?.removeChild(renderer.domElement); } catch {}
         };
     }, []);
+
+    // Auto-hide the monitor hint after a short time
+    useEffect(() => {
+        if (!showMonitorHint) return;
+        const t = setTimeout(() => setShowMonitorHint(false), 8000);
+        return () => clearTimeout(t);
+    }, [showMonitorHint]);
 
     return (
         <>
@@ -488,6 +335,18 @@ export default function ThreeScene() {
                         </>
                     )}
                 </div>
+                {/* Clickable hint near the monitor (visible until first interaction) */}
+                {!isLoading && !isFocused && showMonitorHint && monitorHintPos && (
+                    <button
+                        className={styles.monitorHint}
+                        style={{ left: monitorHintPos.left, top: monitorHintPos.top }}
+                        onClick={() => focusMonitorRef.current()}
+                        aria-label={isMobile ? "Tap the monitor" : "Click the monitor"}
+                    >
+                        <span className={styles.monitorHintPulse} />
+                        {isMobile ? "Tap the monitor" : "Click the monitor"}
+                    </button>
+                )}
                 {/* Exit focus button (visible when focused) */}
                 {isFocused && (
                     <button
