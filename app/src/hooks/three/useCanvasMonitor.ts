@@ -1,6 +1,12 @@
 import * as THREE from "three";
-import { useCallback, useRef, useEffect, useState } from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import logger from "@/utils/logger";
+
+function isMobileDevice(): boolean {
+  return typeof window !== 'undefined' && (
+    window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  );
+}
 
 interface CanvasMonitorOptions {
   width?: number;
@@ -42,6 +48,7 @@ export function useCanvasMonitor(options: CanvasMonitorOptions = {}) {
          left: 0px;
          top: 0px;
          transform: none;
+         transform-origin: top left;
          width: 0px;
          height: 0px;
          border-radius: 3px;
@@ -146,12 +153,25 @@ export function useCanvasMonitor(options: CanvasMonitorOptions = {}) {
       const topPx = Math.round(minY);
 
       if (widthPx > 0 && heightPx > 0) {
-        // Apply bounds to iframe for pixel-perfect alignment
-        iframeRef.current.style.left = `${leftPx}px`;
-        iframeRef.current.style.top = `${topPx}px`;
-        iframeRef.current.style.width = `${widthPx}px`;
-        iframeRef.current.style.height = `${heightPx}px`;
-        iframeRef.current.style.transform = 'none';
+        const mobile = isMobileDevice();
+        if (!mobile) {
+          iframeRef.current.style.left = `${leftPx}px`;
+          iframeRef.current.style.top = `${topPx}px`;
+          iframeRef.current.style.width = `${widthPx}px`;
+          iframeRef.current.style.height = `${heightPx}px`;
+          iframeRef.current.style.transform = 'none';
+        } else {
+          const baseW = Math.max(width, 1024);
+          const baseH = Math.round(baseW * (height / width));
+          const scale = heightPx / baseH;
+          const scaledWidth = baseW * scale;
+          const centeredLeft = Math.round(leftPx + (widthPx - scaledWidth) / 2);
+          iframeRef.current.style.left = `${centeredLeft}px`;
+          iframeRef.current.style.top = `${topPx}px`;
+          iframeRef.current.style.width = `${baseW}px`;
+          iframeRef.current.style.height = `${baseH}px`;
+          iframeRef.current.style.transform = `scale(${scale})`;
+        }
       }
     } catch (error) {
       logger.warn('Failed to update overlay bounds:', error);

@@ -16,7 +16,7 @@ export function calculateMonitorFocusPosition(monitorMesh: THREE.Mesh) {
   const up = new THREE.Vector3(0, 1, 0);      // world up
 
   const isMobile = isMobileDevice();
-  const offset = isMobile ? 1.8 : 1.1; // distance in front along forward
+  const offset = isMobile ? 3.2 : 1.1; // distance in front along forward
   const upOffset = 0;
 
   const cameraPos = monitorCenter
