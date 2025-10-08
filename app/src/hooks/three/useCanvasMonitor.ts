@@ -1,12 +1,7 @@
 import * as THREE from "three";
 import {useCallback, useEffect, useRef, useState} from "react";
 import logger from "@/utils/logger";
-
-function isMobileDevice(): boolean {
-  return typeof window !== 'undefined' && (
-    window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-  );
-}
+import { isMobileDevice } from "@/utils/device";
 
 interface CanvasMonitorOptions {
   width?: number;

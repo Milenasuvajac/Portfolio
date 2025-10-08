@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { easeInOutCubic } from "@/utils/three/animation/easing";
+import { easeInOutQuint } from "@/utils/three/animation/easing";
 import type { MutableRefObject } from "react";
 
 export type CameraAnimationState = {
@@ -9,6 +9,8 @@ export type CameraAnimationState = {
   startTarget: THREE.Vector3;
   endPos: THREE.Vector3;
   endTarget: THREE.Vector3;
+  startUp: THREE.Vector3;
+  endUp: THREE.Vector3;
   isAnimating: boolean;
 };
 
@@ -28,7 +30,8 @@ export function animateCameraTo(
   targetPos: THREE.Vector3,
   targetTarget: THREE.Vector3,
   animationRef: MutableRefObject<CameraAnimationState | null>,
-  duration: number = 1000
+  duration: number = 1400,
+  endUp?: THREE.Vector3
 ) {
   if (animationRef.current?.isAnimating) return;
 
@@ -39,6 +42,8 @@ export function animateCameraTo(
     startTarget: controls.target.clone(),
     endPos: targetPos.clone(),
     endTarget: targetTarget.clone(),
+    startUp: camera.up.clone(),
+    endUp: (endUp ?? camera.up).clone(),
     isAnimating: true,
   };
 }
@@ -59,7 +64,7 @@ export function stepCameraAnimation(
 
   const elapsed = performance.now() - animationRef.current.startTime;
   const progress = Math.min(elapsed / animationRef.current.duration, 1);
-  const easedProgress = easeInOutCubic(progress);
+  const easedProgress = easeInOutQuint(progress);
 
   camera.position.lerpVectors(
     animationRef.current.startPos,
@@ -69,6 +74,13 @@ export function stepCameraAnimation(
   controls.target.lerpVectors(
     animationRef.current.startTarget,
     animationRef.current.endTarget,
+    easedProgress
+  );
+
+  // Smoothly interpolate camera up vector to avoid sudden roll changes
+  camera.up.lerpVectors(
+    animationRef.current.startUp,
+    animationRef.current.endUp,
     easedProgress
   );
 

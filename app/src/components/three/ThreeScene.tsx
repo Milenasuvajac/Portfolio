@@ -11,7 +11,9 @@ import { useCanvasMonitor } from "@/hooks/three/useCanvasMonitor";
 import { useMonitorInteraction } from "@/hooks/three/useMonitorInteraction";
 import ThreeLoadingScreen from "../ui/ThreeLoadingScreen";
 import { animateCameraTo, stepCameraAnimation } from "@/utils/three/animation/cameraAnimation";
+import type { CameraAnimationState } from "@/utils/three/animation/cameraAnimation";
 import { calculateMonitorFocusPosition } from "@/utils/three/animation/cameraTargets";
+import { InteractiveObjectAnimator } from "@/utils/three/animation/interactiveAnimations";
 import styles from "./ThreeScene.module.css";
 
 export default function ThreeScene() {
@@ -21,6 +23,11 @@ export default function ThreeScene() {
 
     // Focus mode state management
     const monitorRef = useRef<THREE.Mesh | null>(null);
+    // Reference to the GitHub icon/object in the scene
+    const gitHubRef = useRef<THREE.Object3D | null>(null);
+    // Interactive objects animation system
+    const animatorRef = useRef<InteractiveObjectAnimator>(new InteractiveObjectAnimator());
+    const hoveredRef = useRef<THREE.Object3D | null>(null);
     const focusRef = useRef<boolean>(false);
     const savedCamRef = useRef<{
         position: THREE.Vector3;
@@ -28,15 +35,7 @@ export default function ThreeScene() {
         up: THREE.Vector3;
         controlsEnabled: boolean;
     } | null>(null);
-    const animationRef = useRef<{
-        startTime: number;
-        duration: number;
-        startPos: THREE.Vector3;
-        startTarget: THREE.Vector3;
-        endPos: THREE.Vector3;
-        endTarget: THREE.Vector3;
-        isAnimating: boolean;
-    } | null>(null);
+    const animationRef = useRef<CameraAnimationState | null>(null);
 
     // Provide a way to trigger blur from UI elements outside the effect scope
     const blurMonitorRef = useRef<() => void>(() => {});
@@ -81,12 +80,9 @@ export default function ThreeScene() {
         
             // Calculate focus position
             const { position, target, up } = calculateMonitorFocusPosition(monitorRef.current);
-        
-            // Ensure correct camera roll aligned with monitor/world up (based on current impl)
-            camera.up.copy(up);
-        
-            // Start animation
-            animateCameraTo(camera, controls, position, target, animationRef);
+
+            // Start animation with smoother easing and faster duration
+            animateCameraTo(camera, controls, position, target, animationRef, 900, up);
             focusRef.current = true;
             setIsFocused(true);
 
@@ -101,7 +97,15 @@ export default function ThreeScene() {
             if (!focusRef.current || !savedCamRef.current) return;
         
             // Start animation back to saved position
-            animateCameraTo(camera, controls, savedCamRef.current.position, savedCamRef.current.target, animationRef);
+            animateCameraTo(
+                camera,
+                controls,
+                savedCamRef.current.position,
+                savedCamRef.current.target,
+                animationRef,
+                900,
+                savedCamRef.current.up
+            );
             focusRef.current = false;
             setIsFocused(false);
 
@@ -125,6 +129,32 @@ export default function ThreeScene() {
             gltf.scene.traverse((child: THREE.Object3D) => {
                 if (child.userData && child.userData.isMonitorSurface) {
                     monitorRef.current = child as THREE.Mesh;
+                }
+                // Capture reference to the GitHub icon/object
+                if (child.name === "GitHub") {
+                    gitHubRef.current = child;
+                }
+                // Collect interactive objects by name
+                const name = child.name?.toLowerCase?.() || "";
+                const interactiveTags = [
+                    "frame",
+                    "flower",
+                    "headphones",
+                    "caffee",
+                    "slippers",
+                    "cat",
+                    "mause",
+                    "github",
+                    "cookie",
+                    "rock",
+                    "plant",
+                    "monstera",
+                    "cactus",
+                    "chair",
+                    "monitor",
+                ];
+                if (interactiveTags.some(tag => name.includes(tag))) {
+                    animatorRef.current.addObject(child);
                 }
             });
             if (monitorRef.current) {
@@ -174,14 +204,54 @@ export default function ThreeScene() {
                 event.preventDefault();
                 return;
             }
-        
-            if (!monitorRef.current) return;
-        
+
+            // Compute mouse position for raycasting
+            if (!renderer) return;
+
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
+            // First, check if the GitHub icon was clicked
+            if (gitHubRef.current) {
+                const ghIntersects = raycaster.intersectObject(gitHubRef.current, true);
+                if (ghIntersects.length > 0) {
+                    // Open GitHub portfolio in a new tab
+                    window.open('https://github.com/Milenasuvajac/Portfolio', '_blank');
+                    return;
+                }
+            }
+
+            // Click pulse on interactive objects
+            const interactiveObjects = animatorRef.current.getObjects();
+            if (interactiveObjects.length > 0) {
+                const ixs = raycaster.intersectObjects(interactiveObjects, true);
+                if (ixs.length > 0) {
+                    // Find the interactive ancestor
+                    const getAncestor = (obj: THREE.Object3D): THREE.Object3D => {
+                        let cur: THREE.Object3D | null = obj;
+                        while (cur) {
+                            if (animatorRef.current.hasObject(cur)) return cur;
+                            cur = cur.parent;
+                        }
+                        return obj;
+                    };
+                    const target = getAncestor(ixs[0].object);
+                    
+                    // Trigger pulse animation
+                    animatorRef.current.setPulseState(target);
+                    
+                    setTimeout(() => {
+                        const isStillHovered = hoveredRef.current === target;
+                        animatorRef.current.setHoverState(target, isStillHovered);
+                    }, 200);
+                    // Do not return; allow monitor click focus if applicable below
+                }
+            }
+
+            // If not on GitHub icon, check monitor for focus/interaction
+            if (!monitorRef.current) return;
             const intersects = raycaster.intersectObject(monitorRef.current);
 
             if (intersects.length > 0) {
@@ -194,9 +264,46 @@ export default function ThreeScene() {
             }
         };
 
+        // Hover handler to scale interactive objects (use target scales + smoothing in animate)
+        const handleCanvasMouseMove = (event: MouseEvent) => {
+            if (!renderer) return;
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+            // Reset previous hovered object
+            if (hoveredRef.current) {
+                animatorRef.current.setHoverState(hoveredRef.current, false);
+                hoveredRef.current = null;
+            }
+
+            const interactiveObjects = animatorRef.current.getObjects();
+            if (interactiveObjects.length > 0) {
+                const intersects = raycaster.intersectObjects(interactiveObjects, true);
+                if (intersects.length > 0) {
+                    // Find interactive ancestor
+                    const getAncestor = (obj: THREE.Object3D): THREE.Object3D => {
+                        let cur: THREE.Object3D | null = obj;
+                        while (cur) {
+                            if (animatorRef.current.hasObject(cur)) return cur;
+                            cur = cur.parent;
+                        }
+                        return obj;
+                    };
+                    const target = getAncestor(intersects[0].object);
+                    
+                    // Set hover state
+                    animatorRef.current.setHoverState(target, true);
+                    hoveredRef.current = target;
+                }
+            }
+        };
+
         // Add event listeners
         document.addEventListener('keydown', handleKeyDown);
         renderer.domElement.addEventListener('click', handleCanvasClick);
+        renderer.domElement.addEventListener('mousemove', handleCanvasMouseMove);
 
         const animate = () => {
             requestAnimationFrame(animate);
@@ -208,6 +315,9 @@ export default function ThreeScene() {
             if (!focusRef.current && !animationRef.current?.isAnimating) {
                 controls.update();
             }
+
+            // Update interactive object animations
+            animatorRef.current.update();
 
             // Render the scene
             renderer.render(scene, camera);
@@ -233,6 +343,7 @@ export default function ThreeScene() {
             // Clean up event listeners
             document.removeEventListener('keydown', handleKeyDown);
             renderer.domElement.removeEventListener('click', handleCanvasClick);
+            renderer.domElement.removeEventListener('mousemove', handleCanvasMouseMove);
             window.removeEventListener("resize", handleResize);
 
             // Reset focus state
