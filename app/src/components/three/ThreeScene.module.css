@@ -16,17 +16,25 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   color: rgba(255, 255, 255, 0.9);
-  padding: 12px 16px;
-  border-radius: 16px;
+  padding: 16px 20px;
+  border-radius: 18px;
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 400;
-  line-height: 1.4;
+  line-height: 1.5;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   user-select: none;
   pointer-events: none;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smaller helper overlay on mobile */
+.helperOverlayMobile {
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 /* Visibility states */
@@ -46,7 +54,7 @@
 }
 
 .helperTitle {
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   opacity: 0.95;
 }
 
@@ -60,16 +68,16 @@
   top: 24px;
   right: 24px;
   z-index: 10001; /* above iframe overlay (z-index 10000) */
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   color: rgba(255, 255, 255, 0.9);
-  padding: 12px 16px;
-  border-radius: 16px;
+  padding: 14px 20px;
+  border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 400;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);

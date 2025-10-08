@@ -20,6 +20,7 @@ export default function ThreeScene() {
     const mountRef = useRef<HTMLDivElement>(null);
     const [isFocused, setIsFocused] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
 
     // Focus mode state management
     const monitorRef = useRef<THREE.Mesh | null>(null);
@@ -53,6 +54,14 @@ export default function ThreeScene() {
         canvasWidth: 512,
         canvasHeight: 288,
     });
+
+    // Detect mobile/touch device once on mount for UI text and sizing
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const mobile = ("ontouchstart" in window) || ((navigator.maxTouchPoints ?? 0) > 0);
+            setIsMobile(mobile);
+        }
+    }, []);
 
     useEffect(() => {
 
@@ -175,7 +184,7 @@ export default function ThreeScene() {
         const mouse = new THREE.Vector2();
 
 
-        // Helper function to detect if device is mobile/touch
+        // Helper function to detect if device is mobile/touch (for interaction logic)
         const isMobileDevice = () => {
             return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         };
@@ -465,10 +474,19 @@ export default function ThreeScene() {
             )}
             <div ref={mountRef} className={styles.container}>
                 <div
-                    className={`${styles.helperOverlay} ${isLoading ? styles.helperLoading : (isFocused ? styles.helperFocused : styles.helperVisible)}`}
+                    className={`${styles.helperOverlay} ${isMobile ? styles.helperOverlayMobile : ""} ${isLoading ? styles.helperLoading : (isFocused ? styles.helperFocused : styles.helperVisible)}`}
                 >
-                    <div className={styles.helperTitle}>Click monitor or Space to focus; Esc to exit</div>
-                    <div className={styles.helperSubtitle}>Click and drag to look around; scroll to zoom</div>
+                    {isMobile ? (
+                        <>
+                            <div className={styles.helperTitle}>Tap monitor to focus; use Exit to leave</div>
+                            <div className={styles.helperSubtitle}>Drag to look around; use two fingers to zoom</div>
+                        </>
+                    ) : (
+                        <>
+                            <div className={styles.helperTitle}>Click monitor or Space to focus; Esc to exit</div>
+                            <div className={styles.helperSubtitle}>Click and drag to look around; scroll to zoom</div>
+                        </>
+                    )}
                 </div>
                 {/* Exit focus button (visible when focused) */}
                 {isFocused && (
